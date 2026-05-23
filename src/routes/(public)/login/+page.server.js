@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import { apiPost } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
@@ -8,11 +8,17 @@ export const actions = {
 		const email = data.get('email');
 		const password = data.get('password');
 
+		if (!email || !password) {
+			return fail(400, { message: 'Email dan password wajib diisi.' });
+		}
+
+		let token;
+		let errorMsg;
 		try {
 			const response = await apiPost(ENDPOINTS.AUTH.LOGIN, { email, password });
 
 			console.log('Response Login Laravel:', response);
-			const token = response.data.token;
+			token = response.data.token;
 
 			if (!token) {
 				throw new Error('Token tidak diterima dari server.');
@@ -29,24 +35,23 @@ export const actions = {
 			// Redirect ke Dashboard Admin setelah login sukses
 			throw redirect(303, '/admin/dashboard');
 		} catch (err) {
-
-            if (err?.status === 303) {
-                throw err;
-            }
+			if (isRedirect(err)) {
+				throw err;
+			}
 
 			console.error('Login Error:', err);
-			let errorMsg = 'Terjadi kesalahan server.';
+			errorMsg = 'Terjadi kesalahan server.';
 
 			if (err.status === 401 || err.data?.status === 'error') {
 				errorMsg = 'Email atau password salah.';
-			} else if (err.message) {
+			} else if (err.message && !err.message.includes('Redirect')) {
 				errorMsg = err.message;
 			}
 
 			// Error lainnya
-            return fail(err.status || 500, {
-                    message: errorMsg
-                });
+			return fail(err.status || 500, {
+				message: errorMsg
+			});
 		}
 	}
 };
