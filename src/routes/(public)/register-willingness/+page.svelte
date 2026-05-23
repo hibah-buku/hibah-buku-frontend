@@ -59,7 +59,7 @@
 				use:enhance={() => {
 					loading = true;
 
-					return async ({ result, update }) => {
+					return async ({ update }) => {
 						loading = false;
 						await update();
 					};
@@ -393,7 +393,7 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="w-full cursor-pointer rounded-lg bg-blue-600 px-6 py-3 font-medium text-gray-100 transition-colors duration-200 hover:bg-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						class="w-full cursor-pointer rounded-lg bg-blue-600 px-6 py-3 font-medium text-gray-100 transition-colors duration-200 hover:bg-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:bg-blue-300 disabled:cursor-not-allowed"
 					>
 						{#if loading}
 							<div class="flex items-center justify-center gap-2">

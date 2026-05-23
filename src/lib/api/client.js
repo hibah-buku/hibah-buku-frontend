@@ -6,7 +6,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api
  * @param {string} endpoint - Path endpoint relatif (misal: '/users')
  * @param {object} options - Opsi fetch standar (method, headers, body, dll)
  */
-async function apiFetch(endpoint, options = {}) {
+async function apiFetch(endpoint, options = {}, event) {
     const url = `${API_BASE}${endpoint}`;
 
     const defaultHeaders = {
@@ -18,6 +18,13 @@ async function apiFetch(endpoint, options = {}) {
         ...defaultHeaders,
         ...options.headers,
     };
+
+    if (event && event.cookies) {
+        const token = event.cookies.get('auth_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
 
     try {
         const response = await fetch(url,{
