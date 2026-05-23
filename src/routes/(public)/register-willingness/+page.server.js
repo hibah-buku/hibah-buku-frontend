@@ -19,10 +19,10 @@ export const actions = {
 
       // Handle error validasi
       if (err.status === 422) {
-        validationErrors = err.data?.data || err.data || {};
+        validationErrors = err.data?.errors || err.errors || err.data || {};
 
-        if (typeof validationErrors === 'string') {
-            validationErrors = { general: [validationErrors] };
+        if (typeof validationErrors !== 'object' || Array.isArray(validationErrors)) {
+            validationErrors = { general: [typeof validationErrors === 'string' ? validationErrors : JSON.stringify(validationErrors)] };
         }
 
       } else {
