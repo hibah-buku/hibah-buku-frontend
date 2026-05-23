@@ -1,5 +1,5 @@
 <script>
-    import { enhance } from '$app/forms';
+    import { enhance, applyAction } from '$app/forms';
     import Icon from '@iconify/svelte';
 
     let { form } = $props();
@@ -40,11 +40,12 @@
         <div class="p-6">
 
             <!-- Form Login -->
-            <form method="POST" use:enhance={() => {
+            <form method="POST" 
+            use:enhance={() => {
                 loading = true;
-                return async ({ update }) => {
+                return async ({ result }) => {
                     loading = false;
-                    await update();
+                    await applyAction(result);
                 };
             }} class="mt-2 space-y-6">
                 <div class="-space-y-px rounded-md mb-16">
