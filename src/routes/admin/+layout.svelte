@@ -13,7 +13,7 @@
 </svelte:head>
 
 <div class="flex min-h-screen bg-gray-50">
-    <aside>
+    <aside class="w-72">
         <AppSidebar />
     </aside>
 
