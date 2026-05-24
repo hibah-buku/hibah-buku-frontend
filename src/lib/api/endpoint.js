@@ -27,9 +27,9 @@ export const ENDPOINTS = {
 
 	// --- CONTRACT MODULE ---
 	CONTRACTS: {
-		INDEX: '/contracts', // GET: List contracts (ADMIN)
-		MY_CONTRACT: '/contracts/me', // GET: Contract for logged-in author (PENULIS)
-		STORE: '/contracts', // POST: Upload signed contract (PENULIS)
+		INDEX: '/contracts', // GET: List Kontrak (ADMIN)
+		MY_CONTRACT: '/contracts/me', // GET: Kontrak dari author yang login (PENULIS)
+		STORE: '/contracts', // POST: Upload Kontrak (PENULIS)
 		VALIDATE: (id) => `/contracts/${id}/validate`, // PATCH: Admin validate/reject (ADMIN)
 		REJECT: (id) => `/contracts/${id}/reject`, // PATCH: Admin validate/reject (ADMIN)
 		DOWNLOAD: (id) => `/contracts/${id}/download` // GET: Download PDF (ADMIN/PENULIS)
@@ -37,7 +37,8 @@ export const ENDPOINTS = {
 
 	// --- DASHBOARD ADMIN ---
 	DASHBOARD: {
-		SUMMARY: '/admin/dashboard' // GET: Stats for admin dashboard
+		SUMMARY: '/dashboard', // GET: Stats for admin dashboard
+		ACTIVITIES: '/dashboard/activities' // GET: Semua Aktivitas terbaru dari 3 operasi (User baru (role penulis), kontrak baru (pending), Formulir baru (pending)) (ADMIN)
 	}
 
 	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan

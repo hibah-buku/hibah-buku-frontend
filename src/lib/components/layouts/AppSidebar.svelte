@@ -26,7 +26,7 @@
 	];
 </script>
 
-<div class="flex h-screen w-72 flex-col border-r border-gray-200 bg-gray-50">
+<div class="flex h-screen w-72 flex-col border-r border-gray-200 bg-gray-50 fixed">
 	<!-- Logo Area -->
 	<div class="border-b border-gray-100 p-6">
 		<h1 class="flex items-center gap-2 text-xl font-bold text-blue-700">

@@ -60,11 +60,11 @@ async function apiFetch(endpoint, options = {}, event) {
  *  GET request
  */
 
-export async function apiGet(endpoint, options = {}) {
+export async function apiGet(endpoint, options = {}, cookies) {
     return await apiFetch(endpoint, {
         method: 'GET',
         ...options,
-    });
+    }, cookies);
 }
 
 /**
