@@ -60,11 +60,25 @@ async function apiFetch(endpoint, options = {}, event) {
  *  GET request
  */
 
-export async function apiGet(endpoint, options = {}, cookies) {
-    return await apiFetch(endpoint, {
-        method: 'GET',
-        ...options,
-    }, cookies);
+/**
+ * GET request dengan query params opsional
+ * @param {string} endpoint
+ * @param {Record<string, string | number | undefined | null>} [params]
+ * @param {{ cookies?: import('@sveltejs/kit').Cookies }} [event]
+ */
+export async function apiGet(endpoint, params = {}, event) {
+    const searchParams = new URLSearchParams();
+
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== '' && value != null) {
+            searchParams.set(key, String(value));
+        }
+    }
+
+    const query = searchParams.toString();
+    const url = query ? `${endpoint}?${query}` : endpoint;
+
+    return await apiFetch(url, { method: 'GET' }, event);
 }
 
 /**
