@@ -85,7 +85,7 @@
 	</div>
 
 	<!-- Filter & Search -->
-	<form onsubmit={handleSearch} class="flex flex-wrap gap-2">
+	<form onsubmit={handleSearch} class="flex flex-wrap gap-2 mx-8">
 		<select
 			name="role"
 			bind:value={roleFilter}

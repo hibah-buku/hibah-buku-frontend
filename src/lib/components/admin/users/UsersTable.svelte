@@ -45,7 +45,7 @@
 							<td class="px-6 py-4 text-right">
 								<a
 									href="/admin/users/{user.id}"
-									class="inline-flex items-center gap-2 px-2.5 py-2 rounded-lg text-green-100 bg-green-600 hover:bg-green-800 duration-150 transition-colors font-medium text-sm cursor-pointer"
+									class="inline-flex items-center gap-2 px-2.5 py-2 rounded-lg text-green-100 bg-blue-600 hover:bg-blue-800 duration-150 transition-colors font-medium text-sm cursor-pointer"
 								>
 									<Icon icon="bxs:user-detail" class="w-5 h-5"/>
                                     Detail
