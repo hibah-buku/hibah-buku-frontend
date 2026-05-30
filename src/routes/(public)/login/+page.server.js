@@ -1,5 +1,6 @@
 import { fail, isRedirect, redirect } from '@sveltejs/kit';
 import { apiPost } from '$lib/api/client.js';
+import { apiGet	 } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
 export const actions = {
@@ -32,7 +33,24 @@ export const actions = {
 				maxAge: 60 * 60 * 24 * 30
 			});
 
-			// Redirect ke Dashboard Admin setelah login sukses
+			// Mendeteksi peran pengguna secara dinamis dari profil mereka
+			try {
+				const profileResponse = await apiGet(ENDPOINTS.AUTH.ME, {}, { cookies });
+				const user = profileResponse.data;
+
+				if (user?.role === 'penulis') {
+					throw redirect(303, '/author/dashboard');
+				} else if (user?.role === 'admin') {
+					throw redirect(303, '/admin/dashboard');
+				}
+			} catch (profileErr) {
+				if (isRedirect(profileErr)) {
+					throw profileErr;
+				}
+				console.error('[Login Action] Gagal mendeteksi role pengguna:', profileErr);
+			}
+
+			// Fallback jika pendeteksian role gagal
 			throw redirect(303, '/admin/dashboard');
 		} catch (err) {
 			if (isRedirect(err)) {

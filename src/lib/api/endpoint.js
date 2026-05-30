@@ -39,7 +39,21 @@ export const ENDPOINTS = {
 	DASHBOARD: {
 		SUMMARY: '/dashboard', // GET: Stats for admin dashboard
 		ACTIVITIES: '/dashboard/activities' // GET: Semua Aktivitas terbaru dari 3 operasi (User baru (role penulis), kontrak baru (pending), Formulir baru (pending)) (ADMIN)
-	}
+	},
 
-	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
+	// --- TIM AUTHOR / PENULIS ---
+	MANUSCRIPTS: {
+		DASHBOARD: '/manuscripts/dashboard', // GET: Data dashboard ringkasan penulis
+		MY_MANUSCRIPT: '/manuscripts/me', // GET: Daftar naskah milik penulis yang login
+		UPLOAD_DRAFT: '/manuscripts/upload-draft', // POST: Unggah draft awal naskah
+		SHOW: (id) => `/manuscripts/${id}`, // GET: Detail lengkap naskah beserta riwayat file
+		UPLOAD_REVISION: (id) => `/manuscripts/${id}/upload-revision`, // POST: Unggah file revisi draft
+		STATUS: (id) => `/manuscripts/${id}/status`, // GET: Data stepper status naskah
+		DOWNLOAD: (id) => `/manuscripts/${id}/download` // GET: Unduh file naskah
+	},
+	AUTHOR_DOCUMENTS: {
+		INDEX: '/manuscripts/me/documents', // GET: Daftar dokumen kelengkapan terunggah
+		UPLOAD: '/manuscripts/me/documents', // POST: Unggah dokumen (KTP, CV, dll)
+		DESTROY: (type) => `/manuscripts/me/documents/${type}` // DELETE: Hapus dokumen kelengkapan
+	}
 };

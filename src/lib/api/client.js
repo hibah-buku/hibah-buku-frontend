@@ -37,7 +37,7 @@ async function apiFetch(endpoint, options = {}, event) {
             
             try {                
                 errorData = await response.json();
-            } catch (error) {
+            } catch {
                 errorData = { message: 'Network error or invalid JSON'};
             }
 
