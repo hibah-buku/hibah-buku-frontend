@@ -27,6 +27,11 @@
 			name: 'Upload author document',
 			href: '/author/upload-document',
 			iconActive: 'material-symbols:contact-page-outline'
+		},
+		{
+			name: 'Riwayat Dokumen',
+			href: '/author/documents',
+			iconActive: 'material-symbols:history'
 		}
 	];
 
