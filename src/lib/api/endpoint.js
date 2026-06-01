@@ -56,4 +56,15 @@ export const ENDPOINTS = {
 		UPLOAD: '/manuscripts/me/documents', // POST: Unggah dokumen (KTP, CV, dll)
 		DESTROY: (type) => `/manuscripts/me/documents/${type}` // DELETE: Hapus dokumen kelengkapan
 	}
+	},
+
+	// --- PUBLISHER DASHBOARD ---
+	PUBLISHER: {
+		DASHBOARD: '/publisher/dashboard',
+		MANUSCRIPTS: '/publisher/manuscripts',
+		MANUSCRIPT_DETAIL: (id) => `/publisher/manuscripts/${id}`,
+		DECISION: (id) => `/publisher/manuscripts/${id}/decision`
+	}
+
+	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
 };
