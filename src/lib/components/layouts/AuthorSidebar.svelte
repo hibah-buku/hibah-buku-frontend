@@ -28,6 +28,11 @@
 			href: '/author/upload-document',
 			iconActive: 'material-symbols:contact-page-outline'
 		},
+		{
+			name: 'Riwayat Upload Draft',
+			href: '/author/draft-history',
+			iconActive: 'material-symbols:history'
+		}
 	];
 
 	// Mengambil data user yang sedang login dari layout loader
