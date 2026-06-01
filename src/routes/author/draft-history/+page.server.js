@@ -5,7 +5,7 @@ export const load = async (event) => {
     try {
         const response = await apiGet(ENDPOINTS.MANUSCRIPTS.MY_MANUSCRIPT, {}, event);
         return {
-            manuscripts: response.data ?? []
+            manuscripts: response.data?.data ?? []
         };
     } catch (err) {
         if (err.status === 404) {

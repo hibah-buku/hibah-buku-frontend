@@ -65,7 +65,7 @@
                             <td class="px-6 py-4 text-gray-500">{formatDate(manuscript.created_at)}</td>
                             <td class="px-6 py-4">
                                 <span class="px-2 py-1 rounded-full text-xs font-medium {getStatusColor(manuscript.status)}">
-                                    {getStatusLabel(manuscript.status)}
+                                    {manuscript.status.label}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
