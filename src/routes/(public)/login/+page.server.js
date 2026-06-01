@@ -20,6 +20,7 @@ export const actions = {
 
 			console.log('Response Login Laravel:', response);
 			token = response.data.token;
+			const userRole = String(response.data?.user?.role ?? '').toLowerCase();
 
 			if (!token) {
 				throw new Error('Token tidak diterima dari server.');
@@ -51,6 +52,11 @@ export const actions = {
 			}
 
 			// Fallback jika pendeteksian role gagal
+			// Redirect ke Dashboard Admin setelah login sukses
+			if (userRole.includes('penerbit')) {
+				throw redirect(303, '/publisher/dashboard');
+			}
+
 			throw redirect(303, '/admin/dashboard');
 		} catch (err) {
 			if (isRedirect(err)) {
