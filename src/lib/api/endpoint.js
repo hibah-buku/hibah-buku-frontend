@@ -55,7 +55,6 @@ export const ENDPOINTS = {
 		INDEX: '/manuscripts/me/documents', // GET: Daftar dokumen kelengkapan terunggah
 		UPLOAD: '/manuscripts/me/documents', // POST: Unggah dokumen (KTP, CV, dll)
 		DESTROY: (type) => `/manuscripts/me/documents/${type}` // DELETE: Hapus dokumen kelengkapan
-	}
 	},
 
 	// --- PUBLISHER DASHBOARD ---
