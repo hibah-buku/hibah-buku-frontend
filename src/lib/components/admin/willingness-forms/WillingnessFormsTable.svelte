@@ -1,6 +1,6 @@
 <script>
 	import Icon from "@iconify/svelte";
-
+    
     let { forms = [], meta = {} } = $props();
 
     // Helper untuk warna badge status
@@ -36,7 +36,7 @@
                 <tr>
                     <th class="px-6 py-4">Judul Buku</th>
                     <th class="px-6 py-4">Penulis Utama</th>
-                    <th class="px-6 py-4">Institusi</th>
+                    <th class="px-6 py-4">Email</th>
                     <th class="px-6 py-4">Status</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
                 </tr>
@@ -46,7 +46,7 @@
                     {#each forms as form (form.id)}
                     {@const bookTitle = form.book?.title ?? 'Tanpa Judul'}
                     {@const authorName = form.main_author?.name ?? 'Tanpa Nama'}
-                    {@const institution = form.main_author?.institution ?? '-'}
+                    {@const email = form.main_author?.email ?? '-'}
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{bookTitle}</div>
@@ -60,7 +60,7 @@
                                 {authorName}
                             </td>
                             <td class="px-6 py-4">
-                                {institution}
+                                {email}
                             </td>
                             <td class="px-6 py-4">
                                 <span class={`inline-flex items-center px-3 py-2 gap-2 rounded-full text-xs font-medium capitalize border ${getStatusStyle(form.status)}`}>
@@ -74,17 +74,31 @@
                                     <Icon icon="boxicons:form" class="w-5 h-5"/>
                                     Detail
                                 </a>
-                                
                                 <!-- Tombol Aksi Cepat -->
                                 {#if form.status === 'pending'}
-                                    <button class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
+
+                                <form method="POST" action="?/approve" class="inline">
+                                    <input type="hidden" name="id" value={form.id} />
+
+                                    <button  
+                                        type="submit"
+                                        class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
                                         <Icon icon="material-symbols:check-circle-outline" class="w-5 h-5"/>
                                         Setuju
                                     </button>
-                                    <button class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
+                                </form>
+
+                                <form method="POST" action="?/reject" class="inline">
+                                    <input type="hidden" name="id" value={form.id} />
+
+                                    <button  
+                                        type="submit"
+                                        class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
                                         <Icon icon="material-symbols:cancel-outline-rounded" class="w-5 h-5"/>
                                         Tolak
                                     </button>
+                                </form>
+
                                 {/if}
                             </td>
                         </tr>

@@ -92,15 +92,16 @@ export async function apiGet(endpoint, params = {}, event) {
  * @param {object} data
  * @param {{ cookies?: import('@sveltejs/kit').Cookies }} event
  */
-export async function apiPost(endpoint, data, event) {
-	return await apiFetch(
-		endpoint,
-		{
-			method: 'POST',
-			body: JSON.stringify(data)
-		},
-		event
-	);
+export async function apiPost(endpoint, data, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'POST',
+            body: JSON.stringify(data),
+            ...options,
+        },
+        event
+    );
 }
 
 /**
@@ -110,15 +111,16 @@ export async function apiPost(endpoint, data, event) {
  * @param {object} data
  * @param {{ cookies?: import('@sveltejs/kit').Cookies }} event
  */
-export async function apiPatch(endpoint, data, event) {
-	return await apiFetch(
-		endpoint,
-		{
-			method: 'PATCH',
-			body: JSON.stringify(data)
-		},
-		event
-	);
+export async function apiPatch(endpoint, data, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            ...options,
+        },
+        event
+    );
 }
 
 /**
@@ -127,12 +129,13 @@ export async function apiPatch(endpoint, data, event) {
  * @param {string} endpoint
  * @param {{ cookies?: import('@sveltejs/kit').Cookies }} event
  */
-export async function apiDelete(endpoint, event) {
-	return await apiFetch(
-		endpoint,
-		{
-			method: 'DELETE'
-		},
-		event
-	);
+export async function apiDelete(endpoint, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'DELETE',
+            ...options,
+        },
+        event
+    );
 }
