@@ -82,7 +82,6 @@
 					<option value="admin">Admin</option>
 					<option value="reviewer">Reviewer</option>
 					<option value="penerbit">Penerbit</option>
-					<option value="penulis">Penulis</option>
 				</select>
 			</div>
 

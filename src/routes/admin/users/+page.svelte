@@ -135,7 +135,6 @@
 		>
 			<option value="">Semua Role</option>
 			<option value="admin">Admin</option>
-			<option value="penulis">Penulis</option>
 			<option value="reviewer">Reviewer</option>
 			<option value="penerbit">Penerbit</option>
 		</select>
