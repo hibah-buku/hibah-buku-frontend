@@ -63,7 +63,7 @@ export const actions = {
 		}
 
 		try {
-			await apiDelete(ENDPOINTS.USERS.DESTROY(id), { cookies });
+			await apiDelete(ENDPOINTS.USERS.DESTROY(id),{}, { cookies });
 		} catch (error) {
 			console.error('Failed to deactivate user:', error);
 

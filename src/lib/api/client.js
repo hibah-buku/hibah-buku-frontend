@@ -91,6 +91,7 @@ export async function apiGet(endpoint, params = {}, event) {
  * @param {string} endpoint
  * @param {object} data
  * @param {{ cookies?: import('@sveltejs/kit').Cookies }} event
+ * @param {object} [options]
  */
 export async function apiPost(endpoint, data, options = {}, event) {
     return apiFetch(
@@ -110,6 +111,7 @@ export async function apiPost(endpoint, data, options = {}, event) {
  * @param {string} endpoint
  * @param {object} data
  * @param {{ cookies?: import('@sveltejs/kit').Cookies }} event
+ * @param {object} [options]
  */
 export async function apiPatch(endpoint, data, options = {}, event) {
     return apiFetch(
