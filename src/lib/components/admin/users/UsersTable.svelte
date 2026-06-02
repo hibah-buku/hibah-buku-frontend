@@ -14,9 +14,9 @@
 	);
 
 	function getUserStatus(user) {
-		if (user?.status) return user.status.toLowerCase();
-		if (user?.is_active === false) return 'inactive';
 		if (user?.deleted_at) return 'inactive';
+		if (user?.is_active === false) return 'inactive';
+		if (user?.status) return user.status.toLowerCase();
 
 		return 'active';
 	}

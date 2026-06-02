@@ -11,10 +11,12 @@
 
 	let searchQuery = $state('');
 	let roleFilter = $state('');
+	let includeDeleted = $state(false);
 
 	$effect(() => {
 		searchQuery = data?.filters?.search ?? '';
 		roleFilter = data?.filters?.role ?? '';
+		includeDeleted = data?.filters?.includeDeleted === '1';
 	});
 
 	function buildParams() {
@@ -28,13 +30,18 @@
 			params.set('role', roleFilter);
 		}
 
+		if (includeDeleted) {
+			params.set('include_deleted', '1');
+		}
+
 		return params;
 	}
 
 	function filtersMatchUrl() {
 		return (
 			(searchQuery.trim() || '') === (data?.filters?.search ?? '') &&
-			(roleFilter || '') === (data?.filters?.role ?? '')
+			(roleFilter || '') === (data?.filters?.role ?? '') &&
+			(includeDeleted ? '1' : '') === (data?.filters?.includeDeleted ?? '')
 		);
 	}
 
@@ -54,6 +61,7 @@
 	$effect(() => {
 		const query = searchQuery;
 		const role = roleFilter;
+		const deleted = includeDeleted;
 
 		const timer = setTimeout(() => {
 			const params = new SvelteURLSearchParams();
@@ -66,8 +74,12 @@
 				params.set('role', role);
 			}
 
-			const next = `${query.trim() || ''}|${role || ''}`;
-			const current = `${data?.filters?.search ?? ''}|${data?.filters?.role ?? ''}`;
+			if (deleted) {
+				params.set('include_deleted', '1');
+			}
+
+			const next = `${query.trim() || ''}|${role || ''}|${deleted ? '1' : ''}`;
+			const current = `${data?.filters?.search ?? ''}|${data?.filters?.role ?? ''}|${data?.filters?.includeDeleted ?? ''}`;
 
 			if (next === current) return;
 
@@ -98,13 +110,13 @@
 </svelte:head>
 
 <!-- Header Halaman -->
-<div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 	<div>
 		<a
 			href="/admin/users/create"
-			class="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800"
+			class="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 transition-colors"
 		>
-			<Icon icon="heroicons:plus" class="h-5 w-5" />
+			<Icon icon="heroicons:plus" class="w-5 h-5" />
 			Tambah User
 		</a>
 
@@ -114,19 +126,29 @@
 	</div>
 
 	<!-- Filter & Search -->
-	<form onsubmit={handleSearch} class="mx-8 flex flex-wrap gap-2">
+	<form onsubmit={handleSearch} class="flex flex-wrap gap-2 mx-8">
 		<select
 			name="role"
 			bind:value={roleFilter}
 			onchange={navigateToFilters}
-			class="rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+			class="rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500"
 		>
 			<option value="">Semua Role</option>
 			<option value="admin">Admin</option>
+			<option value="penulis">Penulis</option>
 			<option value="reviewer">Reviewer</option>
 			<option value="penerbit">Penerbit</option>
-			<option value="penulis">Penulis</option>
 		</select>
+
+		<label class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-600">
+			<input
+				type="checkbox"
+				bind:checked={includeDeleted}
+				onchange={navigateToFilters}
+				class="rounded border-gray-300 text-blue-700 focus:ring-blue-500"
+			/>
+			<span>Tampilkan user inactive</span>
+		</label>
 
 		<div class="relative">
 			<input
@@ -134,21 +156,21 @@
 				name="search"
 				bind:value={searchQuery}
 				placeholder="Cari nama atau email..."
-				class="w-64 rounded-lg border-gray-300 py-2 pr-9 pl-10 text-sm focus:border-blue-500 focus:ring-blue-500"
+				class="pl-10 pr-9 py-2 rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 w-64"
 			/>
 
 			<Icon
 				icon="heroicons:magnifying-glass"
-				class="absolute top-2.5 left-3 h-5 w-5 text-gray-400"
+				class="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
 			/>
 
 			{#if searchQuery}
 				<button
 					type="button"
 					onclick={clearSearch}
-					class="absolute top-2.5 right-3 text-gray-400 hover:text-gray-600"
+					class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
 				>
-					<Icon icon="heroicons:x-mark" class="h-4 w-4" />
+					<Icon icon="heroicons:x-mark" class="w-4 h-4" />
 				</button>
 			{/if}
 		</div>
