@@ -21,8 +21,9 @@ export const ENDPOINTS = {
 	WILLINGNESS: {
 		SUBMIT: '/auth/register-willingness', // POST: Submit form kesediaan (PUBLIC)
         INDEX: '/willingness-forms', // GET: List semua submission (Admin)
-        APPROVE: (id) => `/willingness/${id}/approve`, // PATCH: Approve submission (ADMIN)
-        REJECT: (id) => `/willingness/${id}/reject` // PATCH: Reject submission (ADMIN)
+		SHOW: (id) => `/willingness-forms/${id}`, // GET: Detail submission (Admin)
+        APPROVE: (id) => `/willingness-forms/${id}/approve`, // PATCH: Approve submission (ADMIN)
+        REJECT: (id) => `/willingness-forms/${id}/reject` // PATCH: Reject submission (ADMIN)
 	},
 
 	// --- CONTRACT MODULE ---
@@ -62,7 +63,7 @@ export const ENDPOINTS = {
 		MANUSCRIPTS: '/publisher/manuscripts',
 		MANUSCRIPT_DETAIL: (id) => `/publisher/manuscripts/${id}`,
 		DECISION: (id) => `/publisher/manuscripts/${id}/decision`
-	}
+	},
 
 	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
 };

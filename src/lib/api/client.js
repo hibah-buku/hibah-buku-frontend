@@ -86,31 +86,43 @@ export async function apiGet(endpoint, params = {}, event) {
  * @param {string} endpoint 
  * @param {object} data - Object payload yang akan di-JSON.stringify
  */
-export async function apiPost(endpoint, data, options = {}) {
-    return await apiFetch(endpoint, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        ...options,
-    });
+export async function apiPost(endpoint, data, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'POST',
+            body: JSON.stringify(data),
+            ...options,
+        },
+        event
+    );
 }
 
 /**
  * Helper khusus untuk PATCH/PUT request
  */
-export async function apiPatch(endpoint, data, options = {}) {
-  return apiFetch(endpoint, {
-    method: 'PATCH',
-    body: JSON.stringify(data),
-    ...options,
-  });
+export async function apiPatch(endpoint, data, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            ...options,
+        },
+        event
+    );
 }
 
 /**
  * Helper khusus untuk DELETE request
  */
-export async function apiDelete(endpoint, options = {}) {
-  return apiFetch(endpoint, {
-    method: 'DELETE',
-    ...options,
-  });
+export async function apiDelete(endpoint, options = {}, event) {
+    return apiFetch(
+        endpoint,
+        {
+            method: 'DELETE',
+            ...options,
+        },
+        event
+    );
 }
