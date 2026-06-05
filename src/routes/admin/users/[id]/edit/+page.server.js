@@ -48,7 +48,7 @@ export const actions = {
 		}
 
 		try {
-			await apiPatch(ENDPOINTS.USERS.UPDATE(id), { name, email }, { cookies });
+			await apiPatch(ENDPOINTS.USERS.UPDATE(id), { name, email },{}, { cookies });
 		} catch (error) {
 			console.error('Failed to update user:', error);
 

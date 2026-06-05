@@ -36,6 +36,7 @@ export const actions = {
 					password,
 					password_confirmation: passwordConfirmation
 				},
+				{},
 				{ cookies }
 			);
 		} catch (error) {
