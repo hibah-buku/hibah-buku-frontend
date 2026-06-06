@@ -3,6 +3,7 @@
 	import Icon from '@iconify/svelte';
 
 	function getPageTitle(pathname) {
+		if (pathname.includes('/upload-kontrak')) return 'Upload Kontrak';
 		if (pathname.includes('/upload-draft')) return 'Upload Draft Buku';
 		if (pathname.includes('/review-results')) return 'Hasil Review Buku';
 		if (pathname.includes('/upload-revision')) return 'Upload Revisi Draft';

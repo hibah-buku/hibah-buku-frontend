@@ -9,6 +9,11 @@
 			iconActive: 'material-symbols:dashboard-outline'
 		},
 		{
+			name: 'Upload Kontrak',
+			href: '/author/upload-kontrak',
+			iconActive: 'mdi:file-document-plus-outline'
+		},
+		{
 			name: 'Upload draft',
 			href: '/author/upload-draft',
 			iconActive: 'material-symbols:upload-file-outline'
