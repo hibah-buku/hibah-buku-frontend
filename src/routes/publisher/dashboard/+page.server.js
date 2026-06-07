@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit'; // TAMBAHAN: Untuk mengamankan rute
 import { apiGet } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
@@ -48,30 +49,39 @@ export async function load({ cookies }) {
   const token = cookies.get('auth_token');
 
   if (!token) {
-    return { authRequired: true, error: 'Silakan login terlebih dahulu.' };
+    throw redirect(307, '/auth/login');
   }
 
   try {
     const dashboardResponse = await apiGet(ENDPOINTS.PUBLISHER.DASHBOARD, {}, { cookies });
     const dashboardPayload = extractPayload(dashboardResponse);
 
-    const manuscriptsResponse = await apiGet(ENDPOINTS.PUBLISHER.MANUSCRIPTS, {}, { cookies });
-    const allManuscripts = extractList(manuscriptsResponse, 'items')
-      .map((item) => normalizeManuscript(item?.manuscript ?? item))
-      .filter(Boolean);
+    let prePrintManuscripts = [];
+    const embeddedList = dashboardPayload?.recent_manuscripts ?? dashboardPayload?.manuscripts ?? null;
 
-    const prePrintManuscripts = allManuscripts
-      .filter((item) => ['preprint', 'pra_cetak', 'pre_print', 'pre-cetak'].includes(normalizeStatusKey(item?.status)))
-      .slice(0, 5);
+    if (Array.isArray(embeddedList)) {
+      prePrintManuscripts = embeddedList
+        .map((item) => normalizeManuscript(item?.manuscript ?? item))
+        .filter(Boolean)
+        .slice(0, 5);
+    } else {
+      const manuscriptsResponse = await apiGet(ENDPOINTS.PUBLISHER.MANUSCRIPTS, {}, { cookies });
+      const allManuscripts = extractList(manuscriptsResponse, 'items')
+        .map((item) => normalizeManuscript(item?.manuscript ?? item))
+        .filter(Boolean);
+
+      prePrintManuscripts = allManuscripts
+        .filter((item) => ['preprint', 'pra_cetak', 'pre_print', 'pre-cetak'].includes(normalizeStatusKey(item?.status)))
+        .slice(0, 5);
+    }
 
     return {
       summary: {
-        pre_print: normalizeCount(dashboardPayload?.pending_checks ?? dashboardPayload?.pre_print ?? 0),
-        revised: normalizeCount(dashboardPayload?.revision_requests ?? dashboardPayload?.revised ?? 0),
-        approved: normalizeCount(dashboardPayload?.approved_manuscripts ?? dashboardPayload?.approved ?? 0)
+        pre_print: normalizeCount(dashboardPayload?.pending_checks ?? dashboardPayload?.pre_print ?? dashboardPayload?.preprint_count ?? 0),
+        revised: normalizeCount(dashboardPayload?.revision_requests ?? dashboardPayload?.revised ?? dashboardPayload?.revised_count ?? 0),
+        approved: normalizeCount(dashboardPayload?.approved_manuscripts ?? dashboardPayload?.approved ?? dashboardPayload?.approved_count ?? 0)
       },
-      quickManuscripts: prePrintManuscripts,
-      authRequired: false
+      quickManuscripts: prePrintManuscripts
     };
   } catch (error) {
     console.error('Failed to load dashboard:', error);
