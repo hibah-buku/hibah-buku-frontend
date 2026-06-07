@@ -8,16 +8,27 @@ export const load = async (event) => {
 		throw redirect(303, '/login');
 	}
 
+	let contract = null;
+	try {
+		const contractRes = await apiGet(ENDPOINTS.CONTRACTS.MY_CONTRACT, {}, event);
+		contract = contractRes?.data ?? null;
+	} catch (err) {
+		if (err.status !== 404) {
+			console.error('[Upload Draft Loader] Gagal memuat kontrak:', err);
+		}
+	}
+
 	try {
 		const response = await apiGet(ENDPOINTS.MANUSCRIPTS.DASHBOARD, {}, event);
-		console.log('[DEBUG UPLOAD DRAFT LOADER] Respon API Laravel:', JSON.stringify(response, null, 2));
 		return {
-			willingness: response.data?.willingness ?? null
+			willingness: response.data?.willingness ?? null,
+			contract: contract
 		};
 	} catch (err) {
 		console.error('[Upload Draft Loader] Gagal memuat willingness:', err);
 		return {
-			willingness: null
+			willingness: null,
+			contract: contract
 		};
 	}
 };

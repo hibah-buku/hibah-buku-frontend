@@ -34,7 +34,7 @@
 			iconActive: 'material-symbols:contact-page-outline'
 		},
 		{
-			name: 'Riwayat Dokumen',
+			name: 'Riwayat File',
 			href: '/author/documents',
 			iconActive: 'material-symbols:history'
 		}
