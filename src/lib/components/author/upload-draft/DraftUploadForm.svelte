@@ -4,6 +4,7 @@
 
 	let props = $props();
 	let willingness = $derived(props.willingness);
+	let contract = $derived(props.contract);
 	let form = $derived(props.form);
 
 	let loading = $state(false);
@@ -51,6 +52,27 @@
 	}
 </script>
 
+{#if !contract || contract.status !== 'contract_validated'}
+	<div class="rounded-2xl border border-gray-200 bg-white p-8 text-center flex flex-col items-center justify-center space-y-4 shadow-sm">
+		<div class="h-16 w-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
+			<Icon icon="heroicons:lock-closed" class="h-8 w-8 text-amber-600" />
+		</div>
+		<h4 class="text-xl font-bold text-gray-800">Unggah Draft Belum Diizinkan</h4>
+		<p class="text-sm text-gray-600 max-w-md leading-relaxed">
+			Anda belum dapat mengunggah atau mengisi draft naskah sebelum berkas kontrak kerja sama Anda 
+			diunggah dan disetujui/divalidasi oleh pihak admin.
+		</p>
+		<div class="pt-2">
+			<a 
+				href="/author/dashboard" 
+				class="inline-flex items-center gap-1.5 rounded-lg bg-blue-700 hover:bg-blue-800 text-white px-5 py-2.5 text-sm font-semibold transition-colors shadow"
+			>
+				<Icon icon="heroicons:arrow-left" class="h-4 w-4" />
+				Kembali ke Dashboard
+			</a>
+		</div>
+	</div>
+{:else}
 <div class="space-y-6">
 	<!-- Info Blind Review -->
 	<div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-blue-800 flex gap-3 shadow-sm">
@@ -290,3 +312,4 @@
 		{/if}
 	</div>
 </div>
+{/if}
