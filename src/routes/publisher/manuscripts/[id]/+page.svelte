@@ -1,4 +1,6 @@
 <script>
+  import { enhance } from '$app/forms'; 
+  import { ENDPOINTS } from '$lib/api/endpoint.js';  
   let { data, form } = $props();
   
   // --- Helper Functions ---
@@ -19,7 +21,11 @@
 
   const manuscript = $derived(data.selectedManuscript);
   const detailStatus = $derived(manuscript ? statusMeta(manuscript.status) : null);
-  const downloadLinks = $derived(manuscript?.links ?? manuscript?.download_links ?? {});
+  
+  const fileUrl = $derived(manuscript?.id ? ENDPOINTS.MANUSCRIPTS.DOWNLOAD(manuscript.id) : null);
+  
+  const coverUrl = $derived(manuscript?.links?.cover_url ?? manuscript?.links?.cover_design_url ?? manuscript?.download_links?.cover_url ?? null);
+  const adminDocsUrl = $derived(manuscript?.links?.admin_docs_url ?? manuscript?.download_links?.admin_docs_url ?? null);
   
   let checklistForm = $state({
     cover_design_ok: false,
@@ -61,7 +67,7 @@
   </div>
 
   {#if form?.message}
-    <div class={`rounded-lg px-4 py-3 text-sm ${form.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'}`}>
+    <div class={`rounded-lg px-4 py-3 text-sm ${form.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
       {form.message}
     </div>
   {/if}
@@ -72,55 +78,116 @@
 
   {#if manuscript}
     <div class="bg-white rounded-xl shadow-sm border p-6 space-y-6">
-      <!-- Info Header -->
       <div class="rounded-xl bg-gray-50 p-4 flex justify-between">
         <div>
           <h3 class="text-xl font-semibold text-gray-900">{manuscript.title}</h3>
-          <p class="text-sm text-gray-600">Penulis: {manuscript.author_name}</p>
+          <p class="text-sm text-gray-600 mt-1">Penulis: <span class="font-medium">{manuscript.author_name}</span></p>
         </div>
-        <span class={`rounded-full h-fit px-2.5 py-1 text-xs font-semibold ${detailStatus?.className}`}>
+        <span class={`rounded-full h-fit px-3 py-1 text-xs font-semibold border ${detailStatus?.className}`}>
           {detailStatus?.label}
         </span>
       </div>
 
-      <!-- Links Unduhan -->
       <div>
         <h3 class="text-sm font-semibold mb-3">Unduhan Dokumen</h3>
         <ul class="space-y-2">
-          {#each Object.entries(downloadLinks) as [label, href] (label)}
-            <li class="flex items-center justify-between bg-gray-50 px-3 py-2 rounded-lg">
-              <span class="text-sm font-medium">{label}</span>
-              {#if href} <a class="text-xs bg-blue-600 text-white px-3 py-1 rounded" href={href} target="_blank">Unduh</a> {/if}
+          {#if fileUrl}
+            <li class="flex items-center justify-between bg-gray-50 border px-4 py-3 rounded-lg">
+              <span class="text-sm font-medium text-gray-700">File Naskah (Draft)</span>
+              <a class="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded shadow-sm transition-colors" href={fileUrl} target="_blank">Unduh File</a>
             </li>
-          {/each}
+          {/if}
+          
+          {#if coverUrl}
+            <li class="flex items-center justify-between bg-gray-50 border px-4 py-3 rounded-lg">
+              <span class="text-sm font-medium text-gray-700">Desain Sampul (Cover)</span>
+              <a class="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded shadow-sm transition-colors" href={coverUrl} target="_blank">Lihat Cover</a>
+            </li>
+          {/if}
+          
+          {#if adminDocsUrl}
+            <li class="flex items-center justify-between bg-gray-50 border px-4 py-3 rounded-lg">
+              <span class="text-sm font-medium text-gray-700">Dokumen Administrasi</span>
+              <a class="text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded shadow-sm transition-colors" href={adminDocsUrl} target="_blank">Unduh Dokumen</a>
+            </li>
+          {/if}
+
+          {#if !fileUrl && !coverUrl && !adminDocsUrl}
+            <li class="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg text-center border border-dashed">Tidak ada file/dokumen yang dilampirkan oleh penulis.</li>
+          {/if}
         </ul>
       </div>
 
-      <!-- Form Keputusan -->
-      <form method="POST" onsubmit={() => (decisionSubmitting = true)} class="border-t pt-6">
-        <h3 class="text-sm font-semibold mb-4">Checklist & Keputusan</h3>
+      <form 
+        method="POST" 
+        use:enhance={() => { 
+          decisionSubmitting = true; 
+          return async ({ update }) => { 
+            await update(); 
+            decisionSubmitting = false; 
+          }; 
+        }} 
+        class="border-t pt-6"
+      >
+        <h3 class="text-sm font-semibold mb-4">Checklist Verifikasi Pra-Cetak</h3>
         
-        <div class="space-y-3 mb-6">
-          <label class="flex items-center gap-3"><input type="checkbox" name="cover_design_ok" bind:checked={checklistForm.cover_design_ok} /> Desain sampul sesuai</label>
-          <label class="flex items-center gap-3"><input type="checkbox" name="page_count_ok" bind:checked={checklistForm.page_count_ok} /> Jumlah halaman benar</label>
-          <label class="flex items-center gap-3"><input type="checkbox" name="admin_docs_ok" bind:checked={checklistForm.admin_docs_ok} /> Dokumen lengkap</label>
+        <div class="space-y-3 mb-6 bg-gray-50 p-4 rounded-lg border">
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="cover_design_ok" bind:checked={checklistForm.cover_design_ok} class="w-4 h-4 text-blue-600 rounded" /> 
+            <span class="text-sm font-medium text-gray-700">Desain sampul sesuai standar</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="page_count_ok" bind:checked={checklistForm.page_count_ok} class="w-4 h-4 text-blue-600 rounded" /> 
+            <span class="text-sm font-medium text-gray-700">Jumlah halaman valid</span>
+          </label>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" name="admin_docs_ok" bind:checked={checklistForm.admin_docs_ok} class="w-4 h-4 text-blue-600 rounded" /> 
+            <span class="text-sm font-medium text-gray-700">Dokumen administrasi lengkap</span>
+          </label>
         </div>
 
-        <textarea name="check_notes" class="w-full border p-2 rounded mb-6 text-sm" placeholder="Catatan checklist..." bind:value={checklistForm.check_notes}></textarea>
-
-        <div class="flex gap-4 mb-4">
-          <label><input type="radio" name="decision" value="approved" bind:group={decisionChoice} /> Approved</label>
-          <label><input type="radio" name="decision" value="revised" bind:group={decisionChoice} /> Revised</label>
+        <div class="mb-6">
+          <label for="check_notes" class="block text-sm font-semibold mb-2">Catatan Verifikasi (Opsional)</label>
+          <textarea id="check_notes" name="check_notes" class="w-full border p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Masukkan catatan untuk tim internal..." bind:value={checklistForm.check_notes}></textarea>
         </div>
 
-        <textarea name="revision_notes" class="w-full border p-2 rounded mb-4 text-sm" placeholder="Catatan keputusan..." bind:value={decisionNotes}></textarea>
+        <div class="border-t pt-6 mb-4">
+          <h3 class="text-sm font-semibold mb-3">Keputusan Akhir</h3>
+          <div class="flex gap-6 mb-4">
+            <label class={`flex items-center gap-2 cursor-pointer p-3 rounded-lg border ${decisionChoice === 'approved' ? 'bg-green-50 border-green-500' : 'bg-gray-50'}`}>
+              <input type="radio" name="decision" value="approved" bind:group={decisionChoice} class="text-green-600" /> 
+              <span class="font-medium text-sm">Disetujui (Approved)</span>
+            </label>
+            <label class={`flex items-center gap-2 cursor-pointer p-3 rounded-lg border ${decisionChoice === 'revised' ? 'bg-amber-50 border-amber-500' : 'bg-gray-50'}`}>
+              <input type="radio" name="decision" value="revised" bind:group={decisionChoice} class="text-amber-600" /> 
+              <span class="font-medium text-sm">Perlu Revisi (Revised)</span>
+            </label>
+          </div>
+        </div>
 
-        <button type="submit" disabled={decisionSubmitting} class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50">
-          {decisionSubmitting ? 'Mengirim...' : 'Submit Keputusan'}
+        <div class="mb-6">
+          <label for="revision_notes" class="block text-sm font-semibold mb-2">Catatan Keputusan untuk Penulis</label>
+          <textarea id="revision_notes" name="revision_notes" class="w-full border p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Tulis instruksi revisi atau pesan persetujuan..." bind:value={decisionNotes} required={decisionChoice === 'revised'}></textarea>
+          
+          {#if decisionChoice === 'revised' && !decisionNotes.trim()}
+            <p class="text-xs text-red-600 mt-1.5 font-medium flex items-center gap-1">
+              ⚠️ Wajib mengisi catatan revisi di atas agar tombol submit aktif.
+            </p>
+          {/if}
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={decisionSubmitting || (decisionChoice === 'revised' && !decisionNotes.trim())} 
+          class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          {decisionSubmitting ? 'Memproses Keputusan...' : 'Simpan & Kirim Keputusan'}
         </button>
       </form>
     </div>
   {:else}
-    <p>Data naskah tidak ditemukan.</p>
+    <div class="bg-white border rounded-lg p-8 text-center text-gray-500">
+      Data naskah tidak ditemukan.
+    </div>
   {/if}
 </div>

@@ -18,18 +18,17 @@
     <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{data.error}</div>
   {/if}
 
-<!-- Grid Statistik -->
+  <!-- Ringkasan statistik -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <StatCard title="Pra-cetak" value={summary.pre_print} icon="heroicons:document-text" color="blue" />
     <StatCard title="Menunggu revisi" value={summary.revised} icon="heroicons:exclamation-circle" color="yellow" />
     <StatCard title="Siap cetak" value={summary.approved} icon="heroicons:check-badge" color="green" />
   </div>
 
-<!-- Daftar Naskah Pra-cetak -->
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-    <div class="lg:col-span-2">
+  <!-- Daftar naskah Pra Cetak -->
+  <div class="grid grid-cols-1 gap-6">
+    <div class="w-full">
       <QuickManuscriptList manuscripts={data.quickManuscripts ?? []} />
     </div>
   </div>
-
 </div>

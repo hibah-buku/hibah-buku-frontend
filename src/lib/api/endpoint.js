@@ -65,5 +65,10 @@ export const ENDPOINTS = {
 		DECISION: (id) => `/publisher/manuscripts/${id}/decision`
 	},
 
+	NOTIFICATIONS: {
+		LOGS: '/notification-logs',
+        SUMMARY: '/notification-logs/summary'
+	}
+
 	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
 };

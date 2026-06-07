@@ -42,7 +42,7 @@ export const actions = {
     const manuscriptId = params.id;
     const decision = data.get('decision')?.toString().trim();
 
-    if (!decision) return fail(400, { message: 'Keputusan harus diisi.' });
+    if (!decision) return fail(400, { message: 'Keputusan harus diisi (Approved / Revised).' });
 
     const payload = {
       decision,
@@ -55,13 +55,16 @@ export const actions = {
 
     try {
       const token = cookies.get('auth_token');
-      await apiPost(ENDPOINTS.PUBLISHER.DECISION(manuscriptId), payload, {
+      
+      await apiPost(ENDPOINTS.PUBLISHER.DECISION(manuscriptId), payload, { 
+        cookies,
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
-      return { success: true, message: `Keputusan berhasil dikirim.` };
-    } catch {
-      return fail(500, { message: 'Gagal mengirim keputusan.' });
+      return { success: true, message: `Keputusan berhasil disimpan dan notifikasi telah dikirim.` };
+    } catch (error) {
+      console.log("ERROR DARI BACKEND:", error.response?.data || error.message || error);
+      return fail(500, { message: 'Gagal mengirim keputusan ke server.' });
     }
   }
 };
