@@ -181,7 +181,7 @@
           disabled={decisionSubmitting || (decisionChoice === 'revised' && !decisionNotes.trim())} 
           class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          {decisionSubmitting ? 'Memproses Keputusan...' : 'Simpan & Kirim Keputusan'}
+          {decisionSubmitting ? 'Memproses Keputusan...' : 'Submit Keputusan'}
         </button>
       </form>
     </div>

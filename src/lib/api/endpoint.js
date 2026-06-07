@@ -67,8 +67,8 @@ export const ENDPOINTS = {
 
 	NOTIFICATIONS: {
 		LOGS: '/notification-logs',
-        SUMMARY: '/notification-logs/summary'
-	}
-
+        SUMMARY: '/notification-logs/summary',
+    	REMINDERS: '/reminders'    // <-- TAMBAHKAN KOMA DI SINI AGAR ERORNYA HILANG!
+	},
 	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
 };
