@@ -66,6 +66,7 @@ export const load = async (event) => {
 
     // Tambahkan dokumen administrasi
     administrativeDocuments.forEach(doc => {
+        const fileExt = doc.file_path.split('.').pop();
         unifiedHistory.push({
             id: `doc-${doc.id || doc.document_type}`,
             name: `${doc.document_type.toUpperCase()}_TERUNGGAH`,
@@ -75,7 +76,7 @@ export const load = async (event) => {
             size_kb: doc.file_size_kb,
             status: doc.is_verified ? 'Terverifikasi' : 'Menunggu Verifikasi',
             statusColor: doc.is_verified ? 'green' : 'yellow',
-            download_url: `http://localhost:8000/storage/${doc.file_path}`
+            download_url: `/author/documents/download?path=${encodeURIComponent('/storage/' + doc.file_path)}&name=${encodeURIComponent(doc.document_type.toUpperCase() + '_TERUNGGAH.' + fileExt)}`
         });
     });
 
@@ -93,14 +94,14 @@ export const load = async (event) => {
         };
         unifiedHistory.push({
             id: `contract-${contract.id}`,
-            name: contract.original_name,
+            name: contract.file_info?.original_name || 'KONTRAK_KERJA_SAMA.pdf',
             category: 'Kontrak Kerja Sama',
             subCategory: 'Kontrak Hibah Buku',
-            uploaded_at: contract.validated_at || contract.created_at,
-            size_kb: null,
+            uploaded_at: contract.file_info?.uploaded_at || contract.validated_at || null,
+            size_kb: contract.file_info?.size ? Math.round(contract.file_info.size / 1024) : null,
             status: contractStatusLabels[contract.status] || 'Menunggu Validasi',
             statusColor: contractStatusColors[contract.status] || 'yellow',
-            download_url: `http://localhost:8000/api/contracts/${contract.id}/download`
+            download_url: `/author/documents/download?path=${encodeURIComponent('/contracts/' + contract.id + '/download')}&name=${encodeURIComponent(contract.file_info?.original_name || 'KONTRAK_KERJA_SAMA.pdf')}`
         });
     });
 
@@ -116,7 +117,7 @@ export const load = async (event) => {
             size_kb: file.file_size_kb,
             status: isDraft ? 'Draft Terkirim' : 'Revisi Terkirim',
             statusColor: 'blue',
-            download_url: `http://localhost:8000/api/manuscripts/${file.manuscript_id}/download${!isDraft ? `?file_id=${file.id}` : ''}`
+            download_url: `/author/documents/download?path=${encodeURIComponent('/manuscripts/' + file.manuscript_id + '/download' + (!isDraft ? '?file_id=' + file.id : ''))}&name=${encodeURIComponent(file.original_name)}`
         });
     });
 
