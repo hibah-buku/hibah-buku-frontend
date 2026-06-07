@@ -111,6 +111,7 @@
                                     <a 
                                         href={downloadUrl}
                                         target="_blank"
+                                        download={fileName}
                                         class="inline-flex items-center gap-1 bg-gray-600 text-gray-50 hover:bg-gray-800 px-3 py-2 rounded-sm font-medium text-xs transition-colors cursor-pointer"
                                         title="Download Kontrak"
                                     >
