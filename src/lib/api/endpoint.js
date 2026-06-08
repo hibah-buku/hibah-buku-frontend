@@ -39,7 +39,8 @@ export const ENDPOINTS = {
 	// --- DASHBOARD ADMIN ---
 	DASHBOARD: {
 		SUMMARY: '/dashboard', // GET: Stats for admin dashboard
-		ACTIVITIES: '/dashboard/activities' // GET: Semua Aktivitas terbaru dari 3 operasi (User baru (role penulis), kontrak baru (pending), Formulir baru (pending)) (ADMIN)
+		ACTIVITIES: '/dashboard/activities', // GET: Semua Aktivitas terbaru dari 3 operasi (User baru (role penulis), kontrak baru (pending), Formulir baru (pending)) (ADMIN)
+		TASKS: '/admin/tasks' // GET: List tasks
 	},
 
 	// --- TIM AUTHOR / PENULIS ---
@@ -68,7 +69,25 @@ export const ENDPOINTS = {
 	NOTIFICATIONS: {
 		LOGS: '/notification-logs',
         SUMMARY: '/notification-logs/summary',
-    	REMINDERS: '/reminders'    // <-- TAMBAHKAN KOMA DI SINI AGAR ERORNYA HILANG!
+    	REMINDERS: '/reminders'
 	},
-	// KELOMPOK lain bisa ditambahkan di sini jika ada endpoint lain yang diperlukan
+
+	// --- REVIEWERS & ASSIGNMENTS ---
+	REVIEWERS: {
+		INDEX: '/reviewers', // GET: List Reviewers
+		ASSIGNMENTS: (id) => `/reviewers/${id}/assignments` // GET: List assignments for a reviewer
+	},
+
+	ASSIGNMENTS: {
+		STORE: '/assignments', // POST: Assign reviewer
+		NOTIFY: (id) => `/assignments/${id}/notify`, // POST: Notify reviewer
+		SHOW: (id) => `/assignments/${id}`, // GET: Detail assignment
+		PREVIEW: (id) => `/assignments/${id}/preview`, // GET: Preview
+		RESULTS: (id) => `/assignments/${id}/results`, // GET: Results
+		REVIEWS: (id) => `/assignments/${id}/reviews` // POST: Submit review
+	},
+
+	RUBRICS: {
+		INDEX: '/rubrics' // GET: List rubrics
+	}
 };
