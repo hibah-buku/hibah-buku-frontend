@@ -8,8 +8,22 @@
   let searchQuery = $state('');
   let statusFilter = $state('all');
 
+  // Menangkap semua variasi status yang ada dari Backend secara dinamis
   const visibleStatuses = $derived([...new Set(manuscripts.map((manuscript) => String(manuscript.status ?? '').trim().toLowerCase()))]);
 
+  function formatStatusLabel(statusKey) {
+    if (!statusKey) return '-';
+    
+    if (statusKey === 'to_print' || statusKey === 'ready_to_print') return 'Siap Cetak';
+    if (statusKey === 'preprint' || statusKey === 'pra_cetak' || statusKey === 'pre_print' || statusKey === 'pre-cetak') return 'Pra-Cetak';
+    if (statusKey === 'publisher_revised' || statusKey === 'revised') return 'Revisi';
+    
+    return statusKey
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  // Logika pencarian gabungan (Search Bar + Dropdown Filter)
   const filteredManuscripts = $derived(manuscripts.filter((manuscript) => {
     const statusKey = String(manuscript.status ?? '').trim().toLowerCase();
     const matchesStatus = statusFilter === 'all' || statusKey === statusFilter;
@@ -34,31 +48,33 @@
           type="text"
           bind:value={searchQuery}
           placeholder="Cari judul, penulis, atau status..."
-          class="w-64 rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-blue-500"
+          class="w-64 rounded-lg border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
         />
       </div>
 
       <select
         bind:value={statusFilter}
-        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 focus:outline-none"
       >
         <option value="all">Semua Status</option>
         {#each visibleStatuses as statusKey (statusKey)}
-          <option value={statusKey}>{statusKey.replace(/_/g, ' ')}</option>
+          <option value={statusKey}>
+            {formatStatusLabel(statusKey)}
+          </option>
         {/each}
       </select>
     </div>
   </div>
 
-  {#if data.authRequired}
-    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{data.error ?? 'Silakan login terlebih dahulu.'}</div>
-  {:else if data.error}
+  {#if data.error}
     <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{data.error}</div>
   {/if}
 
-  {#if filteredManuscripts.length === 0 && !data.authRequired && !data.error}
-    <div class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500">Tidak ada naskah yang sesuai dengan pencarian.</div>
-  {:else if manuscripts.length > 0}
+  {#if filteredManuscripts.length === 0 && !data.error}
+    <div class="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 bg-white">
+      Tidak ada naskah yang sesuai dengan kriteria pencarian.
+    </div>
+  {:else}
     <ManuscriptsTable manuscripts={filteredManuscripts} meta={{ total: filteredManuscripts.length }} />
   {/if}
 </div>

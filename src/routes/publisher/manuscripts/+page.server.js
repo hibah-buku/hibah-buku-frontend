@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit';
 import { apiGet } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
@@ -33,15 +34,21 @@ function normalizeManuscript(item) {
 
 export async function load({ cookies }) {
   const token = cookies.get('auth_token');
-  if (!token) return { authRequired: true, manuscripts: [] };
+  
+  // Langsung kembali ke halaman login jika tidak ada token
+  if (!token) {
+    throw redirect(307, '/login');
+  }
 
   try {
     const manuscriptsResponse = await apiGet(ENDPOINTS.PUBLISHER.MANUSCRIPTS, {}, { cookies });
-    const allManuscripts = extractList(manuscriptsResponse, 'items').map((item) => normalizeManuscript(item?.manuscript ?? item));
+    const allManuscripts = extractList(manuscriptsResponse, 'items')
+      .map((item) => normalizeManuscript(item?.manuscript ?? item))
+      .filter(Boolean); 
     
-
     return { manuscripts: allManuscripts };
-  } catch {
+  } catch (error) {
+    console.error('Failed to load manuscripts:', error);
     return { manuscripts: [], error: 'Gagal memuat daftar naskah.' };
   }
 }

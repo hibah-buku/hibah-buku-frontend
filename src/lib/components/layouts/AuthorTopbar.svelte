@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import Icon from '@iconify/svelte';
+	import NotificationBell from './NotificationBell.svelte';
 
 	function getPageTitle(pathname) {
 		if (pathname.includes('/upload-kontrak')) return 'Upload Kontrak';
@@ -42,10 +42,7 @@
 	<!-- Bagian Kanan: Notifikasi & Profil -->
 	<div class="flex items-center gap-4">
 		<!-- Tombol Notifikasi -->
-		<button class="relative p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors duration-200 cursor-pointer">
-			<Icon icon="heroicons:bell" class="w-6 h-6" />
-			<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-		</button>
+		<NotificationBell />
 
 		<div class="h-8 w-px bg-gray-200"></div>
 
