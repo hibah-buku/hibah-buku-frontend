@@ -96,7 +96,6 @@
 				initScores();
 				if (user?.email) formData.reviewer_email = user.email;
 				if (user?.name || user?.username) formData.reviewer_name = user.name || user.username;
-				if (a.author_name) formData.author_name = a.author_name;
 			}
 		} catch (e) {
 			formError = 'Gagal memuat rubrik: ' + e.message;
