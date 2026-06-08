@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { apiGet } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
+import { extractNotificationLogs, filterNotificationsForUser } from '$lib/api/notifications.js';
 
 export const load = async (event) => {
 	const token = event.cookies.get('auth_token');
@@ -21,9 +22,13 @@ export const load = async (event) => {
 			throw redirect(303, '/login');
 		}
 
+		const notificationResponse = await apiGet(ENDPOINTS.NOTIFICATIONS.LOGS, {}, event).catch(() => null);
+		const notificationLogs = filterNotificationsForUser(extractNotificationLogs(notificationResponse), user.email);
+
 		return {
 			isAuthenticated: true,
-			user
+			user,
+			notificationLogs
 		};
 	} catch (err) {
 		if (err.status === 303) throw err;
