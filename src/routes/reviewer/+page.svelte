@@ -1,11 +1,10 @@
 <script>
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import api, { API_BASE_URL, setAuthToken } from '$lib/apiAxios';
 	import { ENDPOINTS } from '$lib/api/endpoint.js';
+	import Icon from '@iconify/svelte';
 
 	let { data } = $props();
-	
+
 	let user = $state(data.user);
 	let reviewerId = $state(user ? String(user.reviewer_id) : '');
 
@@ -26,20 +25,34 @@
 		scores: {}
 	});
 
-	let assignments = $state([]);
+	let assignments = $state(data.assignments || []);
 	let pastScores = $state([]);
 	let rubrics = $state([]);
 
-	onMount(() => {
-		if (user) {
-			fetchAssignments();
-		}
-		initScores();
-	});
+	const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
+	function getCookieValue(name) {
+		const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+		return match ? match[2] : '';
+	}
+
+	function getHeaders() {
+		return {
+			'Content-Type': 'application/json',
+			'Accept': 'application/json',
+			'Authorization': `Bearer ${getCookieValue('auth_token')}`
+		};
+	}
+
+	async function apiFetch(endpoint, options = {}) {
+		const res = await fetch(`${API_BASE}${endpoint}`, {
+			...options,
+			headers: { ...getHeaders(), ...options.headers }
+		});
+		return await res.json();
+	}
 
 	function logout() {
-		// Use native navigation to login page to trigger server-side logout via fallback or clear cookie
-		// Actually it's better to post to an endpoint, but for now we redirect to login
 		goto('/login');
 	}
 
@@ -54,15 +67,15 @@
 		if (!reviewerId) return;
 		loadError = '';
 		try {
-			const res = await api.get(ENDPOINTS.REVIEWERS.ASSIGNMENTS(encodeURIComponent(reviewerId)));
-			if (res.data.status === 'success') {
-				assignments = res.data.data;
+			const res = await apiFetch(ENDPOINTS.REVIEWERS.ASSIGNMENTS(encodeURIComponent(reviewerId)));
+			if (res.status === 'success') {
+				assignments = res.data;
 			} else {
-				loadError = res.data.message;
+				loadError = res.message;
 				assignments = [];
 			}
 		} catch (e) {
-			loadError = 'Gagal memuat tugas: ' + (e.response?.data?.message || e.message);
+			loadError = 'Gagal memuat tugas: ' + e.message;
 			assignments = [];
 		}
 	}
@@ -74,9 +87,9 @@
 
 		try {
 			const queryParam = a.book_type ? '?book_type=' + encodeURIComponent(a.book_type) : '';
-			const res = await api.get(ENDPOINTS.RUBRICS.INDEX + queryParam);
-			if (res.data.status === 'success') {
-				rubrics = res.data.data;
+			const res = await apiFetch(ENDPOINTS.RUBRICS.INDEX + queryParam);
+			if (res.status === 'success') {
+				rubrics = res.data;
 				initScores();
 				if (user?.email) formData.reviewer_email = user.email;
 				if (user?.name || user?.username) formData.reviewer_name = user.name || user.username;
@@ -89,17 +102,17 @@
 		if (a.status === 'completed') {
 			try {
 				const [detailRes, resultsRes] = await Promise.all([
-					api.get(ENDPOINTS.ASSIGNMENTS.SHOW(a.id)),
-					api.get(ENDPOINTS.ASSIGNMENTS.RESULTS(a.id))
+					apiFetch(ENDPOINTS.ASSIGNMENTS.SHOW(a.id)),
+					apiFetch(ENDPOINTS.ASSIGNMENTS.RESULTS(a.id))
 				]);
-				if (detailRes.data?.status === 'success') assignmentDetail = detailRes.data.data;
-				if (resultsRes.data?.status === 'success') {
-					pastScores = resultsRes.data.data.scores || [];
+				if (detailRes?.status === 'success') assignmentDetail = detailRes.data;
+				if (resultsRes?.status === 'success') {
+					pastScores = resultsRes.data.scores || [];
 				} else {
 					pastScores = [];
 				}
 			} catch (err) {
-				formError = 'Gagal memuat detail hasil: ' + (err.response?.data?.message || err.message);
+				formError = 'Gagal memuat detail hasil: ' + (err.message || 'Unknown error');
 				pastScores = [];
 			}
 		} else {
@@ -110,13 +123,13 @@
 
 	async function previewBook(a) {
 		try {
-			const res = await api.get(ENDPOINTS.ASSIGNMENTS.PREVIEW(a.id));
-			const data = res.data?.data || {};
-			const targetUrl = data.url || data.preview_url || API_BASE_URL + ENDPOINTS.ASSIGNMENTS.PREVIEW(a.id);
-			const fullUrl = targetUrl.startsWith('/') ? API_BASE_URL.replace(/\/api$/, '') + targetUrl : targetUrl;
+			const res = await apiFetch(ENDPOINTS.ASSIGNMENTS.PREVIEW(a.id));
+			const previewData = res?.data || {};
+			const targetUrl = previewData.url || previewData.preview_url || `${API_BASE}${ENDPOINTS.ASSIGNMENTS.PREVIEW(a.id)}`;
+			const fullUrl = targetUrl.startsWith('/') ? API_BASE.replace(/\/api$/, '') + targetUrl : targetUrl;
 			window.open(fullUrl, '_blank', 'noopener');
 		} catch (e) {
-			loadError = 'Gagal membuka preview: ' + (e.response?.data?.message || e.message);
+			loadError = 'Gagal membuka preview: ' + e.message;
 		}
 	}
 
@@ -157,19 +170,22 @@
 				general_comments: formData.general_comments
 			};
 
-			const res = await api.post(ENDPOINTS.ASSIGNMENTS.REVIEWS(activeAssignment.id), payload);
+			const res = await apiFetch(ENDPOINTS.ASSIGNMENTS.REVIEWS(activeAssignment.id), {
+				method: 'POST',
+				body: JSON.stringify(payload)
+			});
 
-			if (res.data.status === 'success') {
+			if (res.status === 'success') {
 				formSuccess = 'Penilaian berhasil dikirim!';
 				setTimeout(() => {
 					closeReview();
 					fetchAssignments();
 				}, 1500);
 			} else {
-				formError = 'Error: ' + res.data.message;
+				formError = 'Error: ' + res.message;
 			}
 		} catch (e) {
-			formError = 'Gagal mengirim penilaian: ' + (e.response?.data?.message || e.message);
+			formError = 'Gagal mengirim penilaian: ' + e.message;
 		} finally {
 			submitting = false;
 		}
@@ -252,7 +268,7 @@
 									<div>
 										<h4 class="text-lg font-semibold text-gray-800">{a.book_title}</h4>
 										<p class="mt-1 text-sm text-gray-600">
-											Naskah #{a.manuscript_id} 
+											Naskah #{a.manuscript_id}
 											| Jenis: <span class="font-medium text-indigo-700">{a.book_type === 'bukuajar' ? 'Buku Ajar' : (a.book_type === 'bukureferensi' ? 'Buku Referensi' : 'Umum')}</span>
 											| Status: <span class="font-medium {statusClass(a.status)}">{statusLabel(a.status)}</span>
 										</p>
@@ -296,15 +312,14 @@
 				<div class="rounded-t-lg bg-gradient-to-r from-indigo-700 to-blue-600 p-6 text-white">
 					<h2 class="text-2xl font-bold">{activeAssignment.book_title}</h2>
 					<p class="mt-2 text-blue-100">
-						Naskah #{activeAssignment.manuscript_id} 
-						| Jenis: <span class="font-semibold">{activeAssignment.book_type === 'bukuajar' ? 'Buku Ajar' : (activeAssignment.book_type === 'bukureferensi' ? 'Buku Referensi' : 'Umum')}</span> 
+						Naskah #{activeAssignment.manuscript_id}
+						| Jenis: <span class="font-semibold">{activeAssignment.book_type === 'bukuajar' ? 'Buku Ajar' : (activeAssignment.book_type === 'bukureferensi' ? 'Buku Referensi' : 'Umum')}</span>
 						| Status: {statusLabel(activeAssignment.status)}
 					</p>
 				</div>
 
 				{#if activeAssignment.status === 'completed'}
 					<div class="space-y-6 p-6">
-						<!-- Content sama persis dengan yang sebelumnya -->
 						<div class="grid grid-cols-1 gap-4 border-b pb-4 md:grid-cols-2">
 							<div>
 								<label class="mb-1 block text-sm font-medium text-gray-500">Judul Buku</label>
@@ -348,7 +363,7 @@
 						</div>
 					</div>
 				{:else}
-					<form onsubmit={submitReview} class="space-y-6 p-6">
+					<form onsubmit={(e) => { e.preventDefault(); submitReview(); }} class="space-y-6 p-6">
 						<div class="rounded-lg border border-gray-200 bg-gray-50 p-5 shadow-sm">
 							<h3 class="mb-4 text-lg font-semibold text-gray-800">Informasi Penilai</h3>
 							<div class="grid grid-cols-1 gap-4 md:grid-cols-2">

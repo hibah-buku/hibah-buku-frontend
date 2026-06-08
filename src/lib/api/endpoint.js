@@ -68,7 +68,8 @@ export const ENDPOINTS = {
 
 	NOTIFICATIONS: {
 		LOGS: '/notification-logs',
-        SUMMARY: '/notification-logs/summary'
+        SUMMARY: '/notification-logs/summary',
+    	REMINDERS: '/reminders'
 	},
 
 	// --- REVIEWERS & ASSIGNMENTS ---

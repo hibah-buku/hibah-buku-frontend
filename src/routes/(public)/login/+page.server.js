@@ -28,7 +28,7 @@ export const actions = {
 
 			cookies.set('auth_token', token, {
 				path: '/',
-				httpOnly: false,
+				httpOnly: true,
 				sameSite: 'lax',
 				secure: false, // Set true jika sudah pakai HTTPS
 				maxAge: 60 * 60 * 24 * 30
@@ -45,6 +45,8 @@ export const actions = {
 					throw redirect(303, '/admin/dashboard');
 				} else if (user?.role === 'reviewer') {
 					throw redirect(303, '/reviewer');
+				} else if (user?.role === 'publisher' || user?.role === 'penerbit') {
+					throw redirect(303, '/publisher/dashboard');
 				}
 			} catch (profileErr) {
 				if (isRedirect(profileErr)) {
@@ -53,10 +55,13 @@ export const actions = {
 				console.error('[Login Action] Gagal mendeteksi role pengguna:', profileErr);
 			}
 
-			// Fallback jika pendeteksian role gagal
-			// Redirect ke Dashboard Admin setelah login sukses
-			if (userRole.includes('penerbit')) {
+			// Fallback berdasarkan role dari response login awal
+			if (userRole.includes('penerbit') || userRole.includes('publisher')) {
 				throw redirect(303, '/publisher/dashboard');
+			} else if (userRole.includes('reviewer')) {
+				throw redirect(303, '/reviewer');
+			} else if (userRole.includes('penulis') || userRole.includes('author')) {
+				throw redirect(303, '/author/dashboard');
 			}
 
 			throw redirect(303, '/admin/dashboard');

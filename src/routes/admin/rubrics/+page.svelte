@@ -1,85 +1,37 @@
 <script>
-	import api, { setAuthToken } from '$lib/apiAxios';
-	import { ENDPOINTS } from '$lib/api/endpoint.js';
-	import { onMount } from 'svelte';
+	import { enhance, applyAction } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import Icon from '@iconify/svelte';
 
-	// --- State Management (Svelte 5 Runes) ---
-	let rubrics = $state([]);
+	let { data, form } = $props();
+
+	let rubrics = $derived(data.rubrics || []);
+
 	let newRubricName = $state('');
 	let newRubricMaxScore = $state(5);
 	let newRubricType = $state('Both');
 	let editingRubricId = $state(null);
 	let message = $state('');
 	let messageClass = $state('');
-	let isLoading = $state(false);
 
-	onMount(() => {
-		const token = localStorage.getItem('jwt_token');
-		setAuthToken(token);
-		loadRubrics();
-	});
+	$effect(() => {
+		if (form?.message) {
+			message = form.message;
+			messageClass = form.success
+				? 'bg-green-50 text-green-800 border-green-200'
+				: 'bg-red-50 text-red-800 border-red-200';
 
-	async function loadRubrics() {
-		isLoading = true;
-		try {
-			const res = await api.get(ENDPOINTS.RUBRICS.INDEX);
-			if (res.data.status === 'success') {
-				rubrics = res.data.data;
-			}
-		} catch (e) {
-			console.error('Failed to load rubrics', e);
-			rubrics = [];
-		} finally {
-			isLoading = false;
-		}
-	}
-
-	async function addRubric(e) {
-		e.preventDefault();
-		message = '';
-		messageClass = '';
-
-		if (!newRubricName || !newRubricMaxScore) {
-			message = '✗ Gagal: Semua kolom wajib diisi!';
-			messageClass = 'bg-red-50 text-red-800 border-red-200';
-			return;
-		}
-
-		try {
-			const payload = {
-				criteria_name: newRubricName,
-				max_score: Number(newRubricMaxScore),
-				applicable_book_type: newRubricType
-			};
-			let res;
-			if (editingRubricId) {
-				res = await api.put(`${ENDPOINTS.RUBRICS.INDEX}/${editingRubricId}`, payload);
-			} else {
-				res = await api.post(ENDPOINTS.RUBRICS.INDEX, payload);
-			}
-			
-			if (res.data.status === 'success') {
-				message = `✓ Sukses: Rubrik berhasil ${editingRubricId ? 'diperbarui' : 'ditambahkan'}`;
-				messageClass = 'bg-green-50 text-green-800 border-green-200';
+			if (form.success) {
 				newRubricName = '';
 				newRubricMaxScore = 5;
 				newRubricType = 'Both';
 				editingRubricId = null;
-				loadRubrics();
-			} else {
-				message = '✗ Gagal: ' + (res.data.message || 'Tidak dapat menyimpan data rubrik.');
-				messageClass = 'bg-red-50 text-red-800 border-red-200';
+				invalidateAll();
 			}
 
-			// Hilangkan notifikasi dalam 5 detik
-			setTimeout(() => {
-				message = '';
-			}, 5000);
-		} catch (e) {
-			message = '✗ Gagal: Tidak dapat menyimpan data rubrik.';
-			messageClass = 'bg-red-50 text-red-800 border-red-200';
+			setTimeout(() => { message = ''; }, 5000);
 		}
-	}
+	});
 
 	function editRubric(r) {
 		newRubricName = r.criteria_name;
@@ -96,21 +48,6 @@
 		editingRubricId = null;
 		message = '';
 	}
-
-	async function deleteRubric(id) {
-		if (!confirm('Apakah Anda yakin ingin menghapus rubrik ini?')) return;
-		try {
-			const res = await api.delete(`${ENDPOINTS.RUBRICS.INDEX}/${id}`);
-			if (res.data.status === 'success') {
-				message = '✓ Sukses: Rubrik berhasil dihapus';
-				messageClass = 'bg-green-50 text-green-800 border-green-200';
-				loadRubrics();
-			}
-		} catch (e) {
-			message = '✗ Gagal: Tidak dapat menghapus rubrik.';
-			messageClass = 'bg-red-50 text-red-800 border-red-200';
-		}
-	}
 </script>
 
 <div class="min-h-screen bg-transparent pb-12">
@@ -123,7 +60,19 @@
 					</h2>
 				</div>
 
-				<form onsubmit={addRubric} class="space-y-4 p-6">
+				<form
+					method="POST"
+					action={editingRubricId ? '?/update' : '?/create'}
+					use:enhance={() => {
+						return async ({ result }) => {
+							await applyAction(result);
+						};
+					}}
+					class="space-y-4 p-6"
+				>
+					{#if editingRubricId}
+						<input type="hidden" name="id" value={editingRubricId} />
+					{/if}
 					<div class="flex flex-col items-end gap-4 md:flex-row">
 						<div class="w-full flex-1">
 							<label
@@ -133,6 +82,7 @@
 							>
 							<input
 								id="criteria_name"
+								name="criteria_name"
 								bind:value={newRubricName}
 								type="text"
 								class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-all placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -148,6 +98,7 @@
 							>
 							<select
 								id="applicable_book_type"
+								name="applicable_book_type"
 								bind:value={newRubricType}
 								class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
 							>
@@ -165,6 +116,7 @@
 							>
 							<input
 								id="max_score"
+								name="max_score"
 								bind:value={newRubricMaxScore}
 								type="number"
 								min="1"
@@ -189,6 +141,7 @@
 								</button>
 							{/if}
 						</div>
+					</div>
 
 					{#if message}
 						<div
@@ -210,27 +163,14 @@
 							Seluruh komponen nilai yang akan tampil pada form evaluasi reviewer.
 						</p>
 					</div>
-					<button
-						onclick={loadRubrics}
-						disabled={isLoading}
-						class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:opacity-50"
+					<a
+						href="/admin/rubrics"
+						data-sveltekit-reload
+						class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`}
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-							stroke-width="2"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.253 8H18"
-							/>
-						</svg>
-						{isLoading ? 'Memuat...' : 'Segarkan Data'}
-					</button>
+						<Icon icon="heroicons:arrow-path" class="h-3.5 w-3.5" />
+						Segarkan Data
+					</a>
 				</div>
 
 				{#if rubrics.length === 0}
@@ -240,20 +180,7 @@
 						<div
 							class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400"
 						>
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								class="h-6 w-6"
-								fill="none"
-								viewBox="0 0 24 24"
-								stroke="currentColor"
-								stroke-width="1.5"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-								/>
-							</svg>
+							<Icon icon="heroicons:clipboard-document-list" class="h-6 w-6" />
 						</div>
 						<h3 class="text-sm font-semibold text-gray-700">Belum Ada Data Rubrik</h3>
 						<p class="mt-1 max-w-xs text-xs text-gray-400">
@@ -265,24 +192,11 @@
 						<table class="w-full border-collapse text-left">
 							<thead>
 								<tr class="border-b border-gray-200 bg-gray-50">
-									<th
-										class="w-16 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>ID</th
-									>
-									<th class="p-4 text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Nama Kriteria</th
-									>
-									<th class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Jenis Buku</th
-									>
-									<th
-										class="w-24 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Skor Maks</th
-									>
-									<th
-										class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Aksi</th
-									>
+									<th class="w-16 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase">ID</th>
+									<th class="p-4 text-xs font-bold tracking-wider text-gray-500 uppercase">Nama Kriteria</th>
+									<th class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase">Jenis Buku</th>
+									<th class="w-24 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase">Skor Maks</th>
+									<th class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase">Aksi</th>
 								</tr>
 							</thead>
 							<tbody class="divide-y divide-gray-100">
@@ -296,24 +210,29 @@
 											</span>
 										</td>
 										<td class="p-4 text-center">
-											<span
-												class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700"
-											>
+											<span class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700">
 												{r.max_score} Poin
 											</span>
 										</td>
 										<td class="p-4 text-center">
 											<div class="flex items-center justify-center gap-2">
 												<button onclick={() => editRubric(r)} class="text-indigo-600 hover:text-indigo-800" title="Edit">
-													<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-													</svg>
+													<Icon icon="heroicons:pencil-square" class="h-4 w-4" />
 												</button>
-												<button onclick={() => deleteRubric(r.id)} class="text-red-500 hover:text-red-700" title="Hapus">
-													<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-													</svg>
-												</button>
+												<form method="POST" action="?/delete" use:enhance={() => {
+													if (!confirm('Apakah Anda yakin ingin menghapus rubrik ini?')) {
+														return ({ cancel }) => cancel();
+													}
+													return async ({ result }) => {
+														await applyAction(result);
+														invalidateAll();
+													};
+												}}>
+													<input type="hidden" name="id" value={r.id} />
+													<button type="submit" class="text-red-500 hover:text-red-700" title="Hapus">
+														<Icon icon="heroicons:trash" class="h-4 w-4" />
+													</button>
+												</form>
 											</div>
 										</td>
 									</tr>
@@ -328,7 +247,6 @@
 </div>
 
 <style>
-	/* Animasi halus saat alert muncul */
 	@keyframes fadeIn {
 		from {
 			opacity: 0;
