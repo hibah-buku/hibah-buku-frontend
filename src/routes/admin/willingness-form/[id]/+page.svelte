@@ -5,6 +5,8 @@
 
 	const form = data.form;
 
+	let showRejectModal = $state(false);
+
 	function getStatusStyle(status) {
 		switch (status?.toLowerCase()) {
 			case 'approved':
@@ -323,36 +325,130 @@
 
     <a
         href="/admin/willingness-form" 
-        class="inline-flex items-center gap-1 px-3 py-2 bg-white-600 text-black-50 hover:bg-gray-800 border border-gray-300 rounded-sm font-medium text-xs transition-colors cursor-pointer">
+        class="inline-flex items-center gap-1 px-3 py-2 bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 rounded-sm font-medium text-xs transition-colors cursor-pointer">
         Kembali
     </a>
 
     {#if form.status === 'pending'}
 
-        <form method="POST" action="?/approve" class="inline">
-            <input type="hidden" name="id" value={form.id} />
+		<form method="POST" action="?/approve" class="inline">
+			<input type="hidden" name="id" value={form.id} />
 
-        <button  
-            type="submit"
-            class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
-            <Icon icon="material-symbols:check-circle-outline" class="w-5 h-5"/>
-                Setuju
-            </button>
-        </form>
+			<button
+				type="submit"
+				class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer"
+			>
+				<Icon
+					icon="material-symbols:check-circle-outline"
+					class="w-5 h-5"
+				/>
+				Setuju
+			</button>
+		</form>
 
-        <form method="POST" action="?/reject" class="inline">
-            <input type="hidden" name="id" value={form.id} />
+		<button
+			type="button"
+			onclick={() => (showRejectModal = true)}
+			class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer"
+		>
+			<Icon
+				icon="material-symbols:cancel-outline-rounded"
+				class="w-5 h-5"
+			/>
+			Tolak
+		</button>
 
-        <button  
-            type="submit"
-            class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
-            <Icon icon="material-symbols:cancel-outline-rounded" class="w-5 h-5"/>
-                Tolak
-            </button>
-        </form>
-
-    {/if}
+	{/if}
 
     </div>
+
+	{#if showRejectModal}
+
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+	>
+
+		<div
+			class="w-full max-w-lg bg-white rounded-xl shadow-xl border border-gray-200"
+		>
+
+			<div class="px-6 py-4 border-b border-gray-100">
+
+				<h3 class="text-lg font-semibold text-gray-900">
+					Konfirmasi Penolakan
+				</h3>
+
+				<p class="text-sm text-gray-500 mt-1">
+					Formulir akan ditolak dan alasan penolakan akan disimpan.
+				</p>
+
+			</div>
+
+			<form method="POST" action="?/reject">
+
+				<div class="p-6 space-y-4">
+
+					<div class="bg-red-50 border border-red-200 rounded-lg p-4">
+
+						<p class="text-sm text-red-700">
+							Anda akan menolak formulir:
+						</p>
+
+						<p class="font-semibold text-red-800 mt-1">
+							{form.book?.title}
+						</p>
+
+					</div>
+
+					<div>
+
+						<label
+							for="rejection_reason"
+							class="block text-sm font-medium text-gray-700 mb-2"
+						>
+							Alasan Penolakan
+						</label>
+
+						<textarea
+							id="rejection_reason"
+							name="rejection_reason"
+							rows="5"
+							required
+							class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+							placeholder="Masukkan alasan penolakan..."
+						></textarea>
+
+					</div>
+
+				</div>
+
+				<div
+					class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100"
+				>
+
+					<button
+						type="button"
+						onclick={() => (showRejectModal = false)}
+						class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+					>
+						Batal
+					</button>
+
+					<button
+						type="submit"
+						class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+					>
+						Tolak Formulir
+					</button>
+
+				</div>
+
+			</form>
+
+		</div>
+
+	</div>
+
+	{/if}
 
 </div>
