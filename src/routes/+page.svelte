@@ -16,7 +16,7 @@
 			try {
 				const user = JSON.parse(userStr);
 				if (user.role === 'admin') {
-					goto('/admin/dashboard');
+					goto('/admin');
 				} else if (user.role === 'reviewer') {
 					goto('/reviewer');
 				}
@@ -44,7 +44,7 @@
 				setAuthToken(token);
 
 				if (user.role === 'admin') {
-					goto('/admin/dashboard');
+					goto('/admin');
 				} else {
 					goto('/reviewer');
 				}
