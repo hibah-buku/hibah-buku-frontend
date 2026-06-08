@@ -5,9 +5,7 @@
 	// --- State Management (Svelte 5 Runes) ---
 	let rubrics = $state([]);
 	let newRubricName = $state('');
-	let newRubricMaxScore = $state(5);
-	let newRubricType = $state('Both');
-	let editingRubricId = $state(null);
+	let newRubricMaxScore = $state(25);
 	let message = $state('');
 	let messageClass = $state('');
 	let isLoading = $state(false);
@@ -47,23 +45,14 @@
 		try {
 			const payload = {
 				criteria_name: newRubricName,
-				max_score: Number(newRubricMaxScore),
-				applicable_book_type: newRubricType
+				max_score: Number(newRubricMaxScore)
 			};
-			let res;
-			if (editingRubricId) {
-				res = await api.put(`/rubrics/${editingRubricId}`, payload);
-			} else {
-				res = await api.post('/rubrics', payload);
-			}
-			
+			const res = await api.post('/rubrics', payload);
 			if (res.data.status === 'success') {
-				message = `✓ Sukses: Rubrik berhasil ${editingRubricId ? 'diperbarui' : 'ditambahkan'}`;
+				message = '✓ Sukses: Rubrik baru berhasil ditambahkan ke sistem';
 				messageClass = 'bg-green-50 text-green-800 border-green-200';
 				newRubricName = '';
-				newRubricMaxScore = 5;
-				newRubricType = 'Both';
-				editingRubricId = null;
+				newRubricMaxScore = 25;
 				loadRubrics();
 			} else {
 				message = '✗ Gagal: ' + (res.data.message || 'Tidak dapat menyimpan data rubrik.');
@@ -76,37 +65,6 @@
 			}, 5000);
 		} catch (e) {
 			message = '✗ Gagal: Tidak dapat menyimpan data rubrik.';
-			messageClass = 'bg-red-50 text-red-800 border-red-200';
-		}
-	}
-
-	function editRubric(r) {
-		newRubricName = r.criteria_name;
-		newRubricMaxScore = r.max_score;
-		newRubricType = r.applicable_book_type || 'Both';
-		editingRubricId = r.id;
-		window.scrollTo({ top: 0, behavior: 'smooth' });
-	}
-
-	function cancelEdit() {
-		newRubricName = '';
-		newRubricMaxScore = 5;
-		newRubricType = 'Both';
-		editingRubricId = null;
-		message = '';
-	}
-
-	async function deleteRubric(id) {
-		if (!confirm('Apakah Anda yakin ingin menghapus rubrik ini?')) return;
-		try {
-			const res = await api.delete(`/rubrics/${id}`);
-			if (res.data.status === 'success') {
-				message = '✓ Sukses: Rubrik berhasil dihapus';
-				messageClass = 'bg-green-50 text-green-800 border-green-200';
-				loadRubrics();
-			}
-		} catch (e) {
-			message = '✗ Gagal: Tidak dapat menghapus rubrik.';
 			messageClass = 'bg-red-50 text-red-800 border-red-200';
 		}
 	}
@@ -126,9 +84,7 @@
 		<div class="grid grid-cols-1 gap-6">
 			<div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md">
 				<div class="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
-					<h2 class="text-lg font-bold text-gray-800">
-						{editingRubricId ? 'Edit Kriteria' : 'Tambah Kriteria Baru'}
-					</h2>
+					<h2 class="text-lg font-bold text-gray-800">Tambah Kriteria Baru</h2>
 				</div>
 
 				<form onsubmit={addRubric} class="space-y-4 p-6">
@@ -148,28 +104,11 @@
 							/>
 						</div>
 
-						<div class="w-full md:w-48">
-							<label
-								for="applicable_book_type"
-								class="mb-15 block text-xs font-semibold tracking-wider text-gray-600 uppercase"
-								>Jenis Buku</label
-							>
-							<select
-								id="applicable_book_type"
-								bind:value={newRubricType}
-								class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-							>
-								<option value="Both">Keduanya</option>
-								<option value="Buku Ajar">Buku Ajar</option>
-								<option value="Buku Referensi">Buku Referensi</option>
-							</select>
-						</div>
-
-						<div class="w-full md:w-32">
+						<div class="w-full md:w-40">
 							<label
 								for="max_score"
 								class="mb-15 block text-xs font-semibold tracking-wider text-gray-600 uppercase"
-								>Skor Maks</label
+								>Skor Maksimal</label
 							>
 							<input
 								id="max_score"
@@ -180,23 +119,22 @@
 							/>
 						</div>
 
-						<div class="flex w-full gap-2 md:w-auto md:flex-col lg:flex-row mt-4 md:mt-0">
-							<button
-								type="submit"
-								class="flex flex-1 items-center justify-center gap-1 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 active:scale-[0.98]"
+						<button
+							type="submit"
+							class="flex w-full items-center justify-center gap-1 rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 active:scale-[0.98] md:w-auto"
+						>
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-4 w-4"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+								stroke-width="2"
+								><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg
 							>
-								{editingRubricId ? 'Simpan' : 'Tambah'}
-							</button>
-							{#if editingRubricId}
-								<button
-									type="button"
-									onclick={cancelEdit}
-									class="flex flex-1 items-center justify-center gap-1 rounded-lg bg-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-300 active:scale-[0.98]"
-								>
-									Batal
-								</button>
-							{/if}
-						</div>
+							Tambah
+						</button>
+					</div>
 
 					{#if message}
 						<div
@@ -280,16 +218,13 @@
 									<th class="p-4 text-xs font-bold tracking-wider text-gray-500 uppercase"
 										>Nama Kriteria</th
 									>
-									<th class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Jenis Buku</th
-									>
 									<th
-										class="w-24 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
+										class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
 										>Skor Maks</th
 									>
 									<th
-										class="w-32 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
-										>Aksi</th
+										class="w-44 p-4 text-center text-xs font-bold tracking-wider text-gray-500 uppercase"
+										>Tanggal Dibuat</th
 									>
 								</tr>
 							</thead>
@@ -298,11 +233,6 @@
 									<tr class="transition-colors hover:bg-indigo-50/20">
 										<td class="p-4 text-center font-mono text-sm text-gray-400">#{r.id}</td>
 										<td class="p-4 text-sm font-medium text-gray-800">{r.criteria_name}</td>
-										<td class="p-4 text-center text-xs text-gray-600">
-											<span class="inline-block rounded-full bg-blue-50 px-2 py-1 border border-blue-100 text-blue-700 font-medium">
-												{r.applicable_book_type || 'Both'}
-											</span>
-										</td>
 										<td class="p-4 text-center">
 											<span
 												class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-0.5 text-xs font-bold text-indigo-700"
@@ -310,20 +240,7 @@
 												{r.max_score} Poin
 											</span>
 										</td>
-										<td class="p-4 text-center">
-											<div class="flex items-center justify-center gap-2">
-												<button onclick={() => editRubric(r)} class="text-indigo-600 hover:text-indigo-800" title="Edit">
-													<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-													</svg>
-												</button>
-												<button onclick={() => deleteRubric(r.id)} class="text-red-500 hover:text-red-700" title="Hapus">
-													<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-													</svg>
-												</button>
-											</div>
-										</td>
+										<td class="p-4 text-center text-xs text-gray-500">{r.created_at || '—'}</td>
 									</tr>
 								{/each}
 							</tbody>

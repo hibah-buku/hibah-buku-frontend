@@ -90,8 +90,7 @@
 		formSuccess = '';
 
 		try {
-			const queryParam = a.book_type ? '?book_type=' + encodeURIComponent(a.book_type) : '';
-			const res = await api.get('/rubrics' + queryParam);
+			const res = await api.get('/rubrics');
 			if (res.data.status === 'success') {
 				rubrics = res.data.data;
 				initScores();
@@ -163,7 +162,7 @@
 				});
 				total += formData.scores[rid].score;
 			}
-			const maxTotal = rubrics.reduce((acc, r) => acc + (r.max_score || 5), 0);
+			const maxTotal = rubrics.length * 5;
 			const finalScore = maxTotal > 0 ? Math.round((total / maxTotal) * 100) : 0;
 
 			const payload = {
@@ -271,9 +270,8 @@
 									<div>
 										<h4 class="text-lg font-semibold text-gray-800">{a.book_title}</h4>
 										<p class="mt-1 text-sm text-gray-600">
-											Naskah #{a.manuscript_id} 
-											| Jenis: <span class="font-medium text-indigo-700">{a.book_type === 'bukuajar' ? 'Buku Ajar' : (a.book_type === 'bukureferensi' ? 'Buku Referensi' : 'Umum')}</span>
-											| Status: <span class="font-medium {statusClass(a.status)}">{statusLabel(a.status)}</span>
+											Naskah #{a.manuscript_id} | Status:
+											<span class="font-medium {statusClass(a.status)}">{statusLabel(a.status)}</span>
 										</p>
 									</div>
 									<div class="text-right">
@@ -315,9 +313,7 @@
 				<div class="rounded-t-lg bg-gradient-to-r from-indigo-700 to-blue-600 p-6 text-white">
 					<h2 class="text-2xl font-bold">{activeAssignment.book_title}</h2>
 					<p class="mt-2 text-blue-100">
-						Naskah #{activeAssignment.manuscript_id} 
-						| Jenis: <span class="font-semibold">{activeAssignment.book_type === 'bukuajar' ? 'Buku Ajar' : (activeAssignment.book_type === 'bukureferensi' ? 'Buku Referensi' : 'Umum')}</span> 
-						| Status: {statusLabel(activeAssignment.status)}
+						Naskah #{activeAssignment.manuscript_id} | Status: {statusLabel(activeAssignment.status)}
 					</p>
 				</div>
 
