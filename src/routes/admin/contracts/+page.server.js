@@ -1,4 +1,5 @@
-import { apiGet } from '$lib/api/client.js';
+import { apiGet, apiPatch } from '$lib/api/client.js';
+import { fail } from '@sveltejs/kit';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
 export async function load({ cookies, url }) {
@@ -42,3 +43,54 @@ export async function load({ cookies, url }) {
 		};
 	}
 }
+
+export const actions = {
+	approve: async ({ request, cookies }) => {
+		const data = await request.formData();
+		const id = data.get('id');
+
+		try {
+			const result = await apiPatch(
+				ENDPOINTS.CONTRACTS.VALIDATE(id),
+				{},
+				{},
+				{ cookies }
+			);
+
+			return {
+				success: true,
+				message: result.message
+			};
+		} catch (error) {
+			console.error('Failed to approve contract:', error);
+			return fail(error.status || 500, {
+				message: error?.data?.message || 'Gagal menyetujui kontrak.'
+			});
+		}
+	},
+
+	reject: async ({ request, cookies }) => {
+		const data = await request.formData();
+		const id = data.get('id');
+		const rejection_reason = data.get('rejection_reason') || 'Kontrak ditolak oleh admin.';
+
+		try {
+			const result = await apiPatch(
+				ENDPOINTS.CONTRACTS.REJECT(id),
+				{ rejection_reason },
+				{},
+				{ cookies }
+			);
+
+			return {
+				success: true,
+				message: result.message
+			};
+		} catch (error) {
+			console.error('Failed to reject contract:', error);
+			return fail(error.status || 500, {
+				message: error?.data?.message || 'Gagal menolak kontrak.'
+			});
+		}
+	}
+};
