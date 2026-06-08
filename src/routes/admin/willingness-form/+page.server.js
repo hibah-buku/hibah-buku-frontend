@@ -69,12 +69,15 @@ export const actions = {
 	reject: async ({ request, cookies }) => {
 		const data = await request.formData();
 		const id = data.get('id');
+		
+		const rejection_reason =
+			data.get('rejection_reason');
 
 		try {
 			const result = await apiPatch(
 				ENDPOINTS.WILLINGNESS.REJECT(id),
 				{
-					rejection_reason: 'Ditolak oleh admin'
+					rejection_reason
 				},
 				{},
 				{ cookies }
