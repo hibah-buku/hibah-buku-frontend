@@ -1,7 +1,11 @@
 <script>
 	import Icon from "@iconify/svelte";
-
+    
     let { forms = [], meta = {} } = $props();
+
+    let showRejectModal = $state(false);
+
+    let selectedForm = $state(null);
 
     // Helper untuk warna badge status
     function getStatusStyle(status) {
@@ -36,7 +40,7 @@
                 <tr>
                     <th class="px-6 py-4">Judul Buku</th>
                     <th class="px-6 py-4">Penulis Utama</th>
-                    <th class="px-6 py-4">Institusi</th>
+                    <th class="px-6 py-4">Email</th>
                     <th class="px-6 py-4">Status</th>
                     <th class="px-6 py-4 text-right">Aksi</th>
                 </tr>
@@ -46,7 +50,7 @@
                     {#each forms as form (form.id)}
                     {@const bookTitle = form.book?.title ?? 'Tanpa Judul'}
                     {@const authorName = form.main_author?.name ?? 'Tanpa Nama'}
-                    {@const institution = form.main_author?.institution ?? '-'}
+                    {@const email = form.main_author?.email ?? '-'}
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{bookTitle}</div>
@@ -60,7 +64,7 @@
                                 {authorName}
                             </td>
                             <td class="px-6 py-4">
-                                {institution}
+                                {email}
                             </td>
                             <td class="px-6 py-4">
                                 <span class={`inline-flex items-center px-3 py-2 gap-2 rounded-full text-xs font-medium capitalize border ${getStatusStyle(form.status)}`}>
@@ -74,17 +78,32 @@
                                     <Icon icon="boxicons:form" class="w-5 h-5"/>
                                     Detail
                                 </a>
-                                
                                 <!-- Tombol Aksi Cepat -->
                                 {#if form.status === 'pending'}
-                                    <button class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
+
+                                <form method="POST" action="?/approve" class="inline">
+                                    <input type="hidden" name="id" value={form.id} />
+
+                                    <button  
+                                        type="submit"
+                                        class="inline-flex items-center gap-1 px-3 py-2 bg-green-600 text-green-50 hover:bg-green-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
                                         <Icon icon="material-symbols:check-circle-outline" class="w-5 h-5"/>
                                         Setuju
                                     </button>
-                                    <button class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
+                                </form>
+
+                                <form method="POST" action="?/reject" class="inline">
+                                    <input type="hidden" name="id" value={form.id} />
+
+                                    <button  
+                                        type="button"
+                                        onclick={() => {selectedForm = form; showRejectModal = true}}
+                                        class="inline-flex items-center gap-1 px-3 py-2 bg-red-600 text-red-50 hover:bg-red-800 rounded-sm font-medium text-xs transition-colors cursor-pointer">
                                         <Icon icon="material-symbols:cancel-outline-rounded" class="w-5 h-5"/>
                                         Tolak
                                     </button>
+                                </form>
+
                                 {/if}
                             </td>
                         </tr>
@@ -98,6 +117,7 @@
                 {/if}
             </tbody>
         </table>
+        
     </div>
 
     <!-- Pagination (Sama seperti User Table) -->
@@ -109,4 +129,95 @@
             <!-- Tombol Prev/Next bisa ditambahkan di sini -->
         </div>
     {/if}
+
+    {#if showRejectModal}
+
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg">
+
+            <div class="px-6 py-4 border-b">
+                <h3 class="text-lg font-semibold">
+                    Konfirmasi Penolakan
+                </h3>
+
+                <p class="text-sm text-gray-500 mt-1">
+					Formulir akan ditolak dan alasan penolakan akan disimpan.
+				</p>
+            </div>
+
+            <form method="POST" action="?/reject">
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value={selectedForm?.id}
+                />
+
+                <div class="p-6 space-y-4">
+
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+
+                        <p class="text-sm text-red-700">
+                            Anda akan menolak formulir:
+                        </p>
+
+                        <p class="font-semibold text-red-800 mt-1">
+                            {selectedForm?.book?.title}
+                        </p>
+
+                    </div>
+
+                    <div>
+
+                        <label
+                            for="rejection_reason"
+                            class="block text-sm font-medium text-gray-700 mb-2"
+                        >
+                            Alasan Penolakan
+                        </label>
+
+                        <textarea
+                            id="rejection_reason"
+                            name="rejection_reason"
+                            rows="5"
+                            required
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2"
+                            placeholder="Masukkan alasan penolakan..."
+                        ></textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="flex justify-end gap-3 p-4 border-t">
+
+                    <button
+                        type="button"
+                        onclick={() => {
+                            showRejectModal = false;
+                            selectedForm = null;
+                        }}
+                        class="px-4 py-2 border rounded-lg"
+                    >
+                        Batal
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg"
+                    >
+                        Tolak 
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {/if}
+
 </div>

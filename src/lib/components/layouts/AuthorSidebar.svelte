@@ -9,6 +9,11 @@
 			iconActive: 'material-symbols:dashboard-outline'
 		},
 		{
+			name: 'Upload Kontrak',
+			href: '/author/upload-kontrak',
+			iconActive: 'mdi:file-document-plus-outline'
+		},
+		{
 			name: 'Upload draft',
 			href: '/author/upload-draft',
 			iconActive: 'material-symbols:upload-file-outline'
@@ -29,7 +34,7 @@
 			iconActive: 'material-symbols:contact-page-outline'
 		},
 		{
-			name: 'Riwayat Dokumen',
+			name: 'Riwayat File',
 			href: '/author/documents',
 			iconActive: 'material-symbols:history'
 		}
