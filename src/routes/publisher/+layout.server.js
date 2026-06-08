@@ -1,6 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { apiGet } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
+import { extractNotificationLogs, filterNotificationsForUser } from '$lib/api/notifications.js';
 
 export async function load({ cookies }) {
   const token = cookies.get('auth_token');
@@ -10,18 +11,14 @@ export async function load({ cookies }) {
   }
 
   try {
-    // Mengambil data log notifikasi dari Backend secara global di sisi server
-    const notificationResponse = await apiGet(ENDPOINTS.NOTIFICATIONS.LOGS, {}, { cookies }).catch(() => null);
-    
-    let finalLogs = [];
-    if (notificationResponse && notificationResponse.data) {
-      finalLogs = Array.isArray(notificationResponse.data.data) 
-        ? notificationResponse.data.data 
-        : (Array.isArray(notificationResponse.data) ? notificationResponse.data : []);
-    }
+    const profileResponse = await apiGet(ENDPOINTS.AUTH.ME, {}, { cookies }).catch(() => null);
+    const user = profileResponse?.data || null;
 
-    // Meneruskan data ke seluruh komponen & halaman anak di bawah folder /publisher
+    const notificationResponse = await apiGet(ENDPOINTS.NOTIFICATIONS.LOGS, {}, { cookies }).catch(() => null);
+    const finalLogs = filterNotificationsForUser(extractNotificationLogs(notificationResponse), user?.email);
+
     return {
+      user,
       notificationLogs: finalLogs
     };
   } catch (error) {

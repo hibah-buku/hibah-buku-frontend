@@ -15,6 +15,26 @@
   function closeDropdown() {
     isOpen = false;
   }
+
+  function formatReceivedAt(value) {
+    if (!value) return 'Waktu tidak tersedia';
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) return 'Waktu tidak tersedia';
+
+    return new Intl.DateTimeFormat('id-ID', {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    }).format(date);
+  }
+
+  function handleBackdropKeydown(event) {
+    if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      closeDropdown();
+    }
+  }
 </script>
 
 <div class="relative inline-block text-left">
@@ -31,7 +51,14 @@
   </button>
 
   {#if isOpen}
-    <div class="fixed inset-0 z-10" onclick={closeDropdown}></div>
+    <div
+      class="fixed inset-0 z-10"
+      onclick={closeDropdown}
+      onkeydown={handleBackdropKeydown}
+      role="button"
+      tabindex="0"
+      aria-label="Tutup daftar notifikasi"
+    ></div>
 
     <div class="absolute right-0 mt-2 w-80 origin-top-right rounded-xl bg-white shadow-xl ring-1 ring-black/5 focus:outline-none z-20 overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-100">
       <div class="p-3 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
@@ -47,20 +74,20 @@
             Tidak ada log email masuk.
           </div>
         {:else}
-          {#each notifications.slice(0, 5) as notif}
+          {#each notifications.slice(0, 5) as notif (notif.id ?? notif.recipient_email ?? notif.subject ?? notif.template_code)}
             <div class="p-3 hover:bg-gray-50/75 transition-colors text-left flex gap-3">
               <div class="mt-0.5 text-base shrink-0">
-                {String(notif.subject || '').includes('Disetujui') || String(notif.template_code).includes('approved') ? '✅' : '📧'}
+                {String(notif.subject || '').includes('Disetujui') || String(notif.template_code || '').includes('approved') ? '✅' : '📧'}
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-xs font-medium text-gray-800 line-clamp-2">
                   {notif.subject || String(notif.template_code || 'Email Sistem').replace('_', ' ')}
                 </p>
                 <p class="text-[11px] text-gray-500 truncate mt-1">
-                  Ke: <span class="font-mono text-gray-600 bg-gray-100 px-1 py-0.25 rounded">{notif.recipient_email || notif.email || '-'}</span>
+                  Ke: <span class="font-mono text-gray-600 bg-gray-100 px-1 py-px rounded">{notif.recipient_email || notif.email || '-'}</span>
                 </p>
                 <p class="text-[10px] text-gray-400 mt-1">
-                  ID Log: #{notif.id}
+                  {formatReceivedAt(notif.created_at || notif.sent_at || notif.updated_at)}
                 </p>
               </div>
             </div>
