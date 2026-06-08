@@ -53,11 +53,14 @@
         if (category === 'Kontrak Kerja Sama') {
             return 'heroicons:pencil-square';
         }
-        if (subCategory.includes('KTP')) {
-            return 'heroicons:identification';
+        if (subCategory.includes('Pernyataan')) {
+            return 'heroicons:document-check';
         }
-        if (subCategory.includes('Rekening')) {
-            return 'heroicons:credit-card';
+        if (subCategory.includes('Bermeterai')) {
+            return 'heroicons:check-badge';
+        }
+        if (subCategory.includes('Pendukung')) {
+            return 'heroicons:paper-clip';
         }
         return 'heroicons:folder-open';
     }
