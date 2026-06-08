@@ -15,7 +15,7 @@ To recreate this project with the same configuration:
 
 ```sh
 # recreate this project
-npx sv@0.15.3 create --template minimal --no-types --add prettier tailwindcss="plugins:typography,forms" eslint --install npm hibah-buku-frontend
+npx sv@0.15.3 create --template minimal --types ts --add tailwindcss="plugins:none" prettier --install npm frontend_baru
 ```
 
 ## Developing
