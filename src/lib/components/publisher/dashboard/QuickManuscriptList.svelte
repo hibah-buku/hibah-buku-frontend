@@ -2,10 +2,6 @@
 	import Icon from '@iconify/svelte';
 
 	let { manuscripts = [] } = $props();
-
-	function formatStatus(value) {
-		return String(value ?? '').replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-	}
 </script>
 
 <div class="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -27,7 +23,6 @@
 						<div class="min-w-0 flex-1">
 							<p class="truncate text-base font-medium text-gray-800">{manuscript.title ?? 'Tanpa Judul'}</p>
 							<p class="mt-1 text-sm text-gray-500">{manuscript.author_name ?? '-'} • {manuscript.author_email ?? '-'}</p>
-							<p class="mt-2 text-xs font-medium text-blue-700">{formatStatus(manuscript.status)}</p>
 						</div>
 					</div>
 				</a>
