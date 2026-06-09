@@ -38,7 +38,7 @@
   <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div>
       <h2 class="text-lg font-semibold text-gray-800">Daftar Naskah Pra-cetak</h2>
-      <p class="mt-1 text-sm text-gray-500">Kelola naskah untuk diterbitkan.</p>
+      <p class="mt-1 text-sm text-gray-500">Kelola naskah dan kirim keputusan review untuk penerbit.</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">

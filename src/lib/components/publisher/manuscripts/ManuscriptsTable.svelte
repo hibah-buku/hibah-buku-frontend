@@ -10,8 +10,8 @@
 	function statusMeta(value) {
 		const statusKey = normalizeStatusKey(value);
 		if (statusKey === 'to_print') return { label: 'Siap cetak', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: 'heroicons:check-badge' };
-		if (statusKey === 'publisher_revised' || statusKey === 'revised') return { label: 'Revisi', className: 'bg-amber-100 text-amber-800 border-amber-200', icon: 'heroicons:exclamation-circle' };
-		if (statusKey === 'preprint' || statusKey === 'pra_cetak' || statusKey === 'pre_print' || statusKey === 'pre-cetak') return { label: 'Pra-cetak', className: 'bg-blue-100 text-blue-800 border-blue-200', icon: 'heroicons:document-text' };
+		if (statusKey === 'publisher_revised') return { label: 'Revisi', className: 'bg-amber-100 text-amber-800 border-amber-200', icon: 'heroicons:exclamation-circle' };
+		if (statusKey === 'approved') return { label: 'Pra-cetak', className: 'bg-blue-100 text-blue-800 border-blue-200', icon: 'heroicons:document-text' };
 		return { label: statusKey.replace(/_/g, ' ') || 'Tidak diketahui', className: 'bg-gray-100 text-gray-800 border-gray-200', icon: 'heroicons:question-mark-circle' };
 	}
 </script>
