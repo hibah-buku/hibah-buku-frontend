@@ -72,6 +72,7 @@ export const actions = {
 export async function load({ cookies }) {
 	try {
 		const response = await apiGet(ENDPOINTS.CONTRACTS.MY_CONTRACT, {}, { cookies });
+		console.log(response);
  
 		return {
 			contract: response.data ?? null
@@ -83,14 +84,3 @@ export async function load({ cookies }) {
 		};
 	}
 }
-
-// export async function load({ cookies }) {
-//     return {
-//         contract: {
-//             file_name: 'kontrak-test.pdf',
-//             status: 'pending', // ganti di sini: 'pending' | 'approved' | 'rejected'
-//             reason: 'Dokumen tidak lengkap',
-//             created_at: new Date().toISOString()
-//         }
-//     };
-// }
