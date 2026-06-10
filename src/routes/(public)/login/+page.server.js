@@ -18,7 +18,6 @@ export const actions = {
 		try {
 			const response = await apiPost(ENDPOINTS.AUTH.LOGIN, { email, password });
 
-			console.log('Response Login Laravel:', response);
 			token = response.data.token;
 			const userRole = String(response.data?.user?.role ?? '').toLowerCase();
 
@@ -28,9 +27,9 @@ export const actions = {
 
 			cookies.set('auth_token', token, {
 				path: '/',
-				httpOnly: true,
+				httpOnly: false,
 				sameSite: 'lax',
-				secure: false, // Set true jika sudah pakai HTTPS
+				secure: false,
 				maxAge: 60 * 60 * 24 * 30
 			});
 

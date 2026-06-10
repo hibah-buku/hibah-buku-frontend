@@ -72,7 +72,6 @@ export const actions = {
 			});
 		}
 
-		// Setelah delete, langsung tampilkan user inactive juga
 		throw redirect(303, '/admin/users?include_deleted=1');
 	}
 };

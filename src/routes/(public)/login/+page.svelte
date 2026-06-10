@@ -4,6 +4,7 @@
 
     let { form } = $props();
     let loading = $state(false);
+
 </script>
 
 <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
@@ -40,14 +41,16 @@
         <div class="p-6">
 
             <!-- Form Login -->
-            <form method="POST" 
+            <form 
+            method="POST" 
             use:enhance={() => {
                 loading = true;
                 return async ({ result }) => {
                     loading = false;
                     await applyAction(result);
                 };
-            }} class="mt-2 space-y-6">
+            }} 
+            class="mt-2 space-y-6">
                 <div class="-space-y-px rounded-md mb-16">
                     <div class="mb-4">
                         <label for="email-address" class="mb-1 block text-sm font-medium text-gray-700">Email address</label>

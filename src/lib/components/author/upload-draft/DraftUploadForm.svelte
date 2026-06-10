@@ -25,7 +25,6 @@
 			title = props.willingness.book_title || '';
 			fieldOfStudy = props.willingness.field_of_study || '';
 			institution = props.willingness.main_author_institution || '';
-			console.log('[DEBUG FORM] Berhasil mensinkronkan willingness:', props.willingness);
 		}
 	});
 
