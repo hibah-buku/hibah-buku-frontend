@@ -29,6 +29,7 @@ export const ENDPOINTS = {
 	// --- CONTRACT MODULE ---
 	CONTRACTS: {
 		INDEX: '/contracts', // GET: List Kontrak (ADMIN)
+		SHOW: (id) => `/contracts/${id}`, // GET: Detail kontrak per id (ADMIN)
 		MY_CONTRACT: '/contracts/me', // GET: Kontrak dari author yang login (PENULIS)
 		STORE: '/contracts', // POST: Upload Kontrak (PENULIS)
 		VALIDATE: (id) => `/contracts/${id}/validate`, // PATCH: Admin validate/reject (ADMIN)

@@ -22,7 +22,6 @@ export async function load({ cookies, url }) {
 		);
 
 		const payload = response.data ?? {};
-        console.log(payload)
 
 		return {
 			forms: payload.items ?? [],

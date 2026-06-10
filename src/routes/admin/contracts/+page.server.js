@@ -1,13 +1,13 @@
-import { apiGet } from '$lib/api/client.js';
+import { apiGet, apiPatch } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
-import { fail } from '@sveltejs/kit'; // Tambahkan import fail dari SvelteKit
+import { fail } from '@sveltejs/kit'; 
 
 export async function load({ cookies, url }) {
     const token = cookies.get('auth_token');
 
-    // Ambil parameter filter dari URL
+    // parameter filter dari URL
     const search = url.searchParams.get('search') || '';
-    const status = url.searchParams.get('status') || ''; // Misal: contract_uploaded, contract_validated
+    const status = url.searchParams.get('status') || ''; 
     const page = url.searchParams.get('page') || '1';
 
     if (!token) {
@@ -20,7 +20,7 @@ export async function load({ cookies, url }) {
 
     try {
         const response = await apiGet(
-            ENDPOINTS.CONTRACTS.INDEX, // Pastikan endpoint ini ada di config Anda
+            ENDPOINTS.CONTRACTS.INDEX, 
             { search, status, page },
             { cookies }
         );
@@ -49,28 +49,19 @@ export const actions = {
     approve: async ({ request, cookies }) => {
         const formData = await request.formData();
         const id = formData.get('id');
-        const token = cookies.get('auth_token'); 
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/contracts/${id}/validate`, {
-                method: 'PATCH',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                return fail(response.status, { 
-                    message: errorData.message || 'Gagal memvalidasi kontrak di server.' 
-                });
-            }
-
+            await apiPatch(ENDPOINTS.CONTRACTS.VALIDATE(id), {}, {}, { cookies });
             return { success: true };
         } catch (err) {
             console.error(err);
+
+            if (err?.status) {
+                return fail(err.status, {
+                    message: err.data?.message || 'Gagal memvalidasi kontrak di server.'
+                });
+            }
+
             return fail(500, { message: 'Terjadi kesalahan koneksi ke server backend.' });
         }
     },
@@ -78,28 +69,19 @@ export const actions = {
     reject: async ({ request, cookies }) => {
         const formData = await request.formData();
         const id = formData.get('id');
-        const token = cookies.get('auth_token'); 
 
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/contracts/${id}/reject`, {
-                method: 'PATCH',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                return fail(response.status, { 
-                    message: errorData.message || 'Gagal menolak kontrak di server.' 
-                });
-            }
-
+            await apiPatch(ENDPOINTS.CONTRACTS.REJECT(id), {}, {}, { cookies });
             return { success: true };
         } catch (err) {
             console.error(err);
+
+            if (err?.status) {
+                return fail(err.status, {
+                    message: err.data?.message || 'Gagal menolak kontrak di server.'
+                });
+            }
+
             return fail(500, { message: 'Terjadi kesalahan koneksi ke server backend.' });
         }
     }

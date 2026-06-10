@@ -9,8 +9,6 @@
 	const forms = $derived(data.forms ?? []);
 	const meta = $derived(data?.meta ?? {});
 
-    console.log(forms);
-
 	let searchQuery = $state('');
 	let statusFilter = $state('');
 
