@@ -69,9 +69,10 @@ export const actions = {
     reject: async ({ request, cookies }) => {
         const formData = await request.formData();
         const id = formData.get('id');
+        const rejection_reason = formData.get('rejection_reason')
 
         try {
-            await apiPatch(ENDPOINTS.CONTRACTS.REJECT(id), {}, {}, { cookies });
+            await apiPatch(ENDPOINTS.CONTRACTS.REJECT(id), {rejection_reason}, {}, { cookies });
             return { success: true };
         } catch (err) {
             console.error(err);
