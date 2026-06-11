@@ -2,6 +2,8 @@ import { fail } from '@sveltejs/kit';
 import { apiGet, apiPost } from '$lib/api/client.js';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+
 // --- Helper Functions ---
 function extractPayload(response) {
   if (response && typeof response === 'object' && 'data' in response) return response.data;
@@ -36,7 +38,6 @@ export async function load({ cookies, params }) {
   }
 }
 
-// ✨ PERBAIKAN: Menambahkan blok 'actions' untuk menangani request submit dari sisi front-end Svelte ✨
 export const actions = {
   submitDecision: async ({ request, cookies, params }) => {
     const data = await request.formData();
@@ -45,7 +46,6 @@ export const actions = {
 
     if (!decision) return fail(400, { message: 'Keputusan harus diisi (approved / revised).' });
 
-    // Parsing data form string boolean ('true' / 'false') kembali menjadi tipe boolean asli
     const coverDesignOk = data.get('cover_design_ok') === 'true' || data.get('cover_design_ok') === 'on';
     const pageCountOk = data.get('page_count_ok') === 'true' || data.get('page_count_ok') === 'on';
     const adminDocsOk = data.get('admin_docs_ok') === 'true' || data.get('admin_docs_ok') === 'on';
@@ -71,7 +71,6 @@ export const actions = {
       });
     }
 
-    // Merangkai Payload akhir sesuai syarat JSON controller Laravel backend
     const payload = {
       decision,
       revision_notes: revisionNotes,
@@ -95,6 +94,32 @@ export const actions = {
       return fail(error.status || 500, {
         message: error.data?.message || 'Gagal mengirim keputusan ke server.'
       });
+    }
+  },
+
+  // ✨ FIX: Download naskah lewat server agar token bisa dikirim
+  downloadManuscript: async ({ cookies, params }) => {
+    const token = cookies.get('auth_token');
+    if (!token) return fail(401, { message: 'Sesi habis, silakan login ulang.' });
+
+    try {
+      const response = await fetch(`${API_BASE}/manuscripts/${params.id}/download`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) return fail(response.status, { message: 'Gagal mengunduh file naskah.' });
+
+      const arrayBuffer = await response.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
+      const disposition = response.headers.get('Content-Disposition') || '';
+      const filenameMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      const filename = filenameMatch ? filenameMatch[1].replace(/['"]/g, '') : 'naskah.pdf';
+
+      return { downloadData: { base64, contentType, filename } };
+    } catch {
+      return fail(500, { message: 'Gagal mengunduh file naskah.' });
     }
   }
 };
