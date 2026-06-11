@@ -13,11 +13,24 @@ export async function load(event) {
 			apiGet(ENDPOINTS.MANUSCRIPTS.DASHBOARD, {}, event).catch(() => null)
 		]);
 
-		const reviews = reviewsRes?.data ?? [];
+		const rawReviews = reviewsRes?.data;
+		let reviews = [];
+		let publisherReviews = null;
+
+		if (rawReviews) {
+			if (Array.isArray(rawReviews)) {
+				reviews = rawReviews;
+			} else {
+				reviews = rawReviews.reviewer_reviews ?? [];
+				publisherReviews = rawReviews.publisher_reviews ?? null;
+			}
+		}
+
 		const manuscriptStatus = dashboardRes?.data?.manuscript?.current_status?.label ?? '-';
 
 		return {
 			reviews,
+			publisherReviews,
 			manuscriptStatus,
 			error: null
 		};
@@ -25,6 +38,7 @@ export async function load(event) {
 		console.error('[Author Review Results Load] Error:', err);
 		return {
 			reviews: [],
+			publisherReviews: null,
 			manuscriptStatus: '-',
 			error: 'Gagal mengambil data hasil review.'
 		};

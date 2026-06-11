@@ -30,14 +30,14 @@
 		</p>
 	</div>
 
-{:else if manuscript.current_status?.code !== 'revision_needed'}
+{:else if manuscript.current_status?.code !== 'revision_needed' && manuscript.current_status?.code !== 'publisher_revised'}
 	<div class="rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
 		<h3 class="font-bold text-blue-700">
 			Belum Ada Permintaan Revisi
 		</h3>
 
 		<p class="mt-2 text-sm text-blue-600">
-			Saat ini naskah Anda belum memerlukan revisi dari reviewer.
+			Saat ini naskah Anda belum memerlukan revisi dari reviewer maupun penerbit.
 		</p>
 	</div>
 
@@ -61,8 +61,11 @@
 					</h3>
 
 					<p class="mt-1 text-sm text-amber-600">
-						Silakan unggah file revisi berdasarkan hasil review
-						dan catatan reviewer.
+						{#if manuscript.current_status?.code === 'publisher_revised'}
+							Silakan unggah file revisi berdasarkan masukan/catatan dari Penerbit. Nilai dan persetujuan dari reviewer Anda tetap aman dan tidak akan direset.
+						{:else}
+							Silakan unggah file revisi berdasarkan hasil review dan catatan reviewer.
+						{/if}
 					</p>
 				</div>
 			</div>
@@ -79,8 +82,11 @@
 				</h3>
 
 				<p class="mt-1 text-sm text-gray-500">
-					Unggah versi revisi terbaru untuk melanjutkan proses
-					penilaian reviewer.
+					{#if manuscript.current_status?.code === 'publisher_revised'}
+						Unggah versi revisi terbaru untuk melanjutkan proses pra-cetak penerbit.
+					{:else}
+						Unggah versi revisi terbaru untuk melanjutkan proses penilaian reviewer.
+					{/if}
 				</p>
 			</div>
 
