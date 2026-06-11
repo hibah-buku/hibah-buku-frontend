@@ -71,13 +71,13 @@ export async function load({ cookies }) {
         .filter(Boolean);
 
       prePrintManuscripts = allManuscripts
-        .filter((item) => ['preprint', 'pra_cetak', 'pre_print', 'pre-cetak'].includes(normalizeStatusKey(item?.status)))
+        .filter((item) => ['approved','preprint'].includes(normalizeStatusKey(item?.status)))
         .slice(0, 5);
     }
 
     return {
       summary: {
-        pre_print: normalizeCount(dashboardPayload?.pending_checks ?? dashboardPayload?.pre_print ?? dashboardPayload?.preprint_count ?? 0),
+        pre_print: normalizeCount(dashboardPayload?.pending_checks ?? dashboardPayload?.pre_print ?? dashboardPayload?.approved_count ?? 0),
         revised: normalizeCount(dashboardPayload?.revision_requests ?? dashboardPayload?.revised ?? dashboardPayload?.revised_count ?? 0),
         approved: normalizeCount(dashboardPayload?.approved_manuscripts ?? dashboardPayload?.approved ?? dashboardPayload?.approved_count ?? 0)
       },

@@ -1,92 +1,129 @@
 <script>
     import { onMount } from 'svelte';
     import Icon from '@iconify/svelte';
-    
-    let { data } = $props();
-    let contractId = $derived(data?.id || '');
 
-    let pdfData = $state(null);
+    let { data } = $props();
+
+    // State UI
     let isLoading = $state(true);
+    let pdfFileName = $derived(data?.pdfFileName || 'document.pdf');
+    let pdfBlobUrl = $state(null);
+    let pdfData = $state(null);
     let errorMessage = $state(null);
     let currentPage = $state(1);
     let totalPages = $state(0);
     let zoom = $state(100);
-    let pdfFileName = $state('document.pdf');
-    let pdfBlobUrl = $state(null);
+    let canvasElement = $state();
 
-    // Fungsi render yang melooping semua halaman
-    const renderAllPages = async (pdf) => {
+    const renderCurrentPage = async () => {
+        if (!pdfData || !canvasElement || totalPages === 0) return;
+        
         try {
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const scale = zoom / 100;
-                const viewport = page.getViewport({ scale });
-                
-                const canvas = document.getElementById(`pdf-canvas-${i}`);
-                if (!canvas) continue;
+            const page = await pdfData.getPage(currentPage);
+            const scale = zoom / 100;
+            const viewport = page.getViewport({ scale });
 
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                
-                const context = canvas.getContext('2d');
-                await page.render({ canvasContext: context, viewport }).promise;
-            }
+            // Set ukuran canvas eksplisit
+            canvasElement.width = viewport.width;
+            canvasElement.height = viewport.height;
+
+            const context = canvasElement.getContext('2d');
+            await page.render({ canvasContext: context, viewport }).promise;
         } catch (error) {
-            console.error('Error rendering pages:', error);
+            console.error('Error rendering page:', error);
         }
     };
 
-    // Trigger render ulang jika zoom berubah
-    $effect(() => {
-        if (pdfData) renderAllPages(pdfData);
-    });
-
-    const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = pdfBlobUrl;
-        link.download = pdfFileName;
-        link.click();
-    };
-
-    const handlePrint = () => window.print();
-
     onMount(async () => {
+        if (data?.error) {
+            errorMessage = data.error;
+            isLoading = false;
+            return;
+        }
+
+        const getCookie = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        };
+
+        const token = getCookie('auth_token');
+        if (!token) {
+            throw new Error('Token autentikasi tidak ditemukan.');
+        }
+
         try {
+            const response = await fetch(`/api/contracts/${data.contractId}/preview`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/pdf'
+                }
+            });
+
+            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+            const blob = await response.blob();
+            pdfBlobUrl = URL.createObjectURL(blob);
+
+            // Load PDF.js Library
             if (!window.pdfjsLib) {
-                await new Promise((resolve) => {
+                await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
                     script.onload = () => {
                         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                         resolve();
                     };
+                    script.onerror = reject;
                     document.head.appendChild(script);
                 });
             }
 
-            const response = await fetch(`http://127.0.0.1:8000/api/contracts/${contractId}/download`, {
-                method: 'GET',
-                headers: { 'Accept': 'application/pdf' }
-            });
-
-            if (!response.ok) throw new Error("Gagal mengambil file.");
-
-            const blob = await response.blob();
-            pdfBlobUrl = URL.createObjectURL(blob);
+            const arrayBuffer = await blob.arrayBuffer();
+            const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
             
-            const pdf = await window.pdfjsLib.getDocument(pdfBlobUrl).promise;
             pdfData = pdf;
             totalPages = pdf.numPages;
-            
-            // Tunggu DOM terbentuk sebelum render
-            setTimeout(() => renderAllPages(pdf), 500);
+
+            setTimeout(() => {
+                renderCurrentPage();
+                isLoading = false;
+            }, 50);
 
         } catch (error) {
-            errorMessage = error.message;
-        } finally {
+            console.error(error);
+            errorMessage = error.message || 'Gagal memuat preview PDF.';
             isLoading = false;
         }
     });
+    
+    $effect(() => {
+        if (pdfData && canvasElement) {
+            renderCurrentPage();
+        }
+    });
+
+    // Cleanup Blob URL
+    $effect(() => {
+        return () => {
+            if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
+        };
+    });
+
+    const zoomIn = () => { zoom = Math.min(300, zoom + 10); };
+    const zoomOut = () => { zoom = Math.max(50, zoom - 10); };
+    const prevPage = () => { if (currentPage > 1) currentPage -= 1; };
+    const nextPage = () => { if (currentPage < totalPages) currentPage += 1; };
+    const handleDownload = () => {
+        if (!pdfBlobUrl) return;
+        const link = document.createElement('a');
+        link.href = pdfBlobUrl;
+        link.download = pdfFileName;
+        link.click();
+    };
+    const handlePrint = () => window.print();
 </script>
 
 <div class="flex flex-col h-screen bg-white">
@@ -200,14 +237,13 @@
             </div>
             {:else if pdfData}
         <div class="flex flex-col items-center gap-4 py-4">
-            {#each Array(totalPages) as _, i}
-                <div class="bg-white shadow-2xl">
-                    <canvas 
-                        id="pdf-canvas-{i + 1}" 
-                        class="block"
-                    />
-                </div>
-            {/each}
+            <div class="bg-white shadow-2xl">
+                <canvas
+                    bind:this={canvasElement} 
+                    id="pdf-canvas"
+                    class="block"
+                ></canvas>
+            </div>
         </div>
     {/if}
     </div>

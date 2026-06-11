@@ -11,7 +11,7 @@ async function apiFetch(endpoint, options = {}, event) {
 
 	const defaultHeaders = {
 		'Content-Type': 'application/json',
-		Accept: 'application/json'
+		Accept: options.headers?.Accept || 'application/json'
 	};
 
 	const headers = {
@@ -35,9 +35,14 @@ async function apiFetch(endpoint, options = {}, event) {
 
 		if (!response.ok) {
 			let errorData = {};
+			const contentType = response.headers.get('Content-Type') || '';
 
 			try {
-				errorData = await response.json();
+				if (contentType.includes('application/json')) {
+					errorData = await response.json();
+				} else {
+					errorData = { message: await response.text() };
+				}
 			} catch {
 				errorData = {
 					message: 'Network error or invalid JSON'
@@ -49,6 +54,18 @@ async function apiFetch(endpoint, options = {}, event) {
 				data: errorData,
 				message: errorData.message || `HTTP error: ${response.status}`
 			};
+		}
+
+		if (options.responseType === 'blob') {
+			return await response.blob();
+		}
+
+		if (options.responseType === 'arrayBuffer') {
+			return await response.arrayBuffer();
+		}
+
+		if (options.responseType === 'text') {
+			return await response.text();
 		}
 
 		return await response.json();
@@ -80,6 +97,18 @@ export async function apiGet(endpoint, params = {}, event) {
 		url,
 		{
 			method: 'GET'
+		},
+		event
+	);
+}
+
+export async function apiDownload(endpoint, options = {}, event) {
+	return apiFetch(
+		endpoint,
+		{
+			method: 'GET',
+			responseType: 'arrayBuffer',
+			...options
 		},
 		event
 	);

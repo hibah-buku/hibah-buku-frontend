@@ -1,14 +1,14 @@
 import { apiGet, apiPatch } from '$lib/api/client.js';
-import { fail } from '@sveltejs/kit';
 import { ENDPOINTS } from '$lib/api/endpoint.js';
+import { fail } from '@sveltejs/kit'; 
 
 export async function load({ cookies, url }) {
 	const token = cookies.get('auth_token');
 
-	// Ambil parameter filter dari URL
-	const search = url.searchParams.get('search') || '';
-	const status = url.searchParams.get('status') || ''; // Misal: contract_uploaded, contract_validated
-	const page = url.searchParams.get('page') || '1';
+    // parameter filter dari URL
+    const search = url.searchParams.get('search') || '';
+    const status = url.searchParams.get('status') || ''; 
+    const page = url.searchParams.get('page') || '1';
 
 	if (!token) {
 		return { 
@@ -18,12 +18,12 @@ export async function load({ cookies, url }) {
         };
 	}
 
-	try {
-		const response = await apiGet(
-			ENDPOINTS.CONTRACTS.INDEX, // Pastikan endpoint ini ada di config Anda
-			{ search, status, page },
-			{ cookies }
-		);
+    try {
+        const response = await apiGet(
+            ENDPOINTS.CONTRACTS.INDEX, 
+            { search, status, page },
+            { cookies }
+        );
 
 		const payload = response.data ?? {};
 
@@ -45,52 +45,44 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	approve: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const id = data.get('id');
+    approve: async ({ request, cookies }) => {
+        const formData = await request.formData();
+        const id = formData.get('id');
 
-		try {
-			const result = await apiPatch(
-				ENDPOINTS.CONTRACTS.VALIDATE(id),
-				{},
-				{},
-				{ cookies }
-			);
+        try {
+            await apiPatch(ENDPOINTS.CONTRACTS.VALIDATE(id), {}, {}, { cookies });
+            return { success: true };
+        } catch (err) {
+            console.error(err);
 
-			return {
-				success: true,
-				message: result.message
-			};
-		} catch (error) {
-			console.error('Failed to approve contract:', error);
-			return fail(error.status || 500, {
-				message: error?.data?.message || 'Gagal menyetujui kontrak.'
-			});
-		}
-	},
+            if (err?.status) {
+                return fail(err.status, {
+                    message: err.data?.message || 'Gagal memvalidasi kontrak di server.'
+                });
+            }
 
-	reject: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const id = data.get('id');
-		const rejection_reason = data.get('rejection_reason') || 'Kontrak ditolak oleh admin.';
+            return fail(500, { message: 'Terjadi kesalahan koneksi ke server backend.' });
+        }
+    },
 
-		try {
-			const result = await apiPatch(
-				ENDPOINTS.CONTRACTS.REJECT(id),
-				{ rejection_reason },
-				{},
-				{ cookies }
-			);
+    reject: async ({ request, cookies }) => {
+        const formData = await request.formData();
+        const id = formData.get('id');
+        const rejection_reason = formData.get('rejection_reason')
 
-			return {
-				success: true,
-				message: result.message
-			};
-		} catch (error) {
-			console.error('Failed to reject contract:', error);
-			return fail(error.status || 500, {
-				message: error?.data?.message || 'Gagal menolak kontrak.'
-			});
-		}
-	}
+        try {
+            await apiPatch(ENDPOINTS.CONTRACTS.REJECT(id), {rejection_reason}, {}, { cookies });
+            return { success: true };
+        } catch (err) {
+            console.error(err);
+
+            if (err?.status) {
+                return fail(err.status, {
+                    message: err.data?.message || 'Gagal menolak kontrak di server.'
+                });
+            }
+
+            return fail(500, { message: 'Terjadi kesalahan koneksi ke server backend.' });
+        }
+    }
 };

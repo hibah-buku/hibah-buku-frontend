@@ -2,6 +2,7 @@
     import ContractsTable from '$lib/components/admin/contracts/ContractsTable.svelte';
     import Icon from '@iconify/svelte';
     import { goto } from '$app/navigation';
+    import { SvelteURLSearchParams } from 'svelte/reactivity';
 
     let { data } = $props();
 
@@ -19,7 +20,7 @@
 
     // Fungsi navigasi dengan debounce
     function navigateToFilters() {
-        const params = new URLSearchParams();
+        const params = new SvelteURLSearchParams();
         if (searchQuery.trim()) params.set('search', searchQuery.trim());
         if (statusFilter) params.set('status', statusFilter);
 
@@ -46,7 +47,7 @@
             const currentStatus = data?.filters?.status ?? '';
 
             if (q.trim() !== currentSearch || s !== currentStatus) {
-                const params = new URLSearchParams();
+                const params = new SvelteURLSearchParams();
                 if (q.trim()) params.set('search', q.trim());
                 if (s) params.set('status', s);
 

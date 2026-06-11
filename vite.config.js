@@ -7,9 +7,10 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://localhost:8000',
+				target: 'http://hibah-buku-backend.test',
 				changeOrigin: true,
-				secure: false
+				secure: false,
+				credentials: true 
 			}
 		}
 	}

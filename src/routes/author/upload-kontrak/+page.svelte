@@ -65,22 +65,52 @@
 
 		<!-- APPROVED: kontrak disetujui admin -->
 		{:else if data.contract?.status === 'contract_validated'}
-			<div class="flex flex-col items-center text-center py-8 gap-4">
-				<Icon icon="mdi:tick-circle-outline" class="w-16 h-16 text-green-500" />
-				<h2 class="text-xl font-semibold text-green-700">Kontrak Disetujui!</h2>
-				<p class="text-gray-600">Kontrak Anda telah divalidasi dan disetujui oleh admin.</p>
+		<div class="flex flex-col items-center text-center py-10 gap-6 max-w-lg mx-auto">
+			<!-- Ikon & Judul Utama -->
+			<div class="flex flex-col items-center gap-3">
+				<div class="bg-green-100 p-4 rounded-full">
+					<Icon icon="carbon:checkmark-outline" class="w-20 h-20 text-green-600" />
+				</div>
+				<h2 class="text-3xl font-bold text-gray-800">Selamat, Kontrak Disetujui!</h2>
+				<p class="text-gray-600 text-lg">
+					Kontrak hibah buku Anda telah divalidasi oleh admin. Silakan lanjutkan ke tahap berikutnya.
+				</p>
+			</div>
 
-				<div class="mt-2 w-full p-4 bg-white rounded-2xl shadow-md border border-gray-200 p-8 text-left">
-					<h3 class="font-semibold text-green-700 mb-3">Detail Kontrak</h3>
-					<div class="flex items-center gap-2 text-sm text-gray-700 mb-2">
-						
+			<!-- Kartu Detail Kontrak -->
+			<div class="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-left space-y-4">
+				<h3 class="font-semibold text-gray-700 border-b pb-2 mb-4">Detail Kontrak</h3>
+				
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+					<div>
+						<p class="text-gray-500">Status</p>
+						<p class="font-medium text-green-600 flex items-center gap-2 mt-1">
+							<Icon icon="carbon:checkmark-filled" class="w-4 h-4" />
+							Disetujui
+						</p>
 					</div>
-					<div class="flex items-center gap-2 text-sm text-green-700 font-medium">
-						<Icon icon="carbon:checkmark-outline" class="w-4 h-4 shrink-0" />
-						<span>Status: Disetujui</span>
+					<div>
+						<p class="text-gray-500">Tanggal Validasi</p>
+						<p class="font-medium text-gray-800 mt-1">
+							{data.contract.validated_at ? new Date(data.contract.validated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+						</p>
 					</div>
 				</div>
 			</div>
+
+			<!-- Call to Action Button -->
+			<a 
+				href="/author/upload-draft" 
+				class="mt-4 w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+			>
+				<Icon icon="carbon:upload" class="w-5 h-5" />
+				Lanjut ke Upload Naskah Draft
+			</a>
+			
+			<p class="text-xs text-gray-400 mt-2">
+				Pastikan Anda telah membaca panduan penulisan naskah sebelum mengunggah.
+			</p>
+		</div>
 
 		<!-- REJECTED: kontrak ditolak admin -->
 		{:else if data.contract?.status === 'contract_rejected'  && !showUploadForm }
@@ -89,7 +119,7 @@
 				<h2 class="text-xl font-semibold text-red-700">Kontrak Ditolak</h2>
 				<p class="text-gray-600">Kontrak Anda tidak disetujui oleh admin.</p>
 
-				<div class="mt-2 w-full p-4 bg-white rounded-2xl shadow-md border border-gray-200 p-8 text-left">
+				<div class="mt-2 w-full p-4 bg-white rounded-2xl shadow-md border border-gray-200 text-left">
 					<h3 class="font-semibold text-red-700 mb-3">Detail Kontrak</h3>
 					<div class="flex items-center gap-2 text-sm text-gray-700 mb-2">
 					

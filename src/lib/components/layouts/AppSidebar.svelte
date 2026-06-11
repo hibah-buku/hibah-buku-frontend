@@ -9,6 +9,22 @@
 			iconActive: 'material-symbols:dashboard-outline'
 		},
 		{
+			name: 'Plotting Naskah',
+			href: '/admin',
+			iconActive: 'material-symbols:assignment-outline',
+			exact: true
+		},
+		{
+			name: 'Semua Tugas',
+			href: '/admin/tasks',
+			iconActive: 'material-symbols:task-alt'
+		},
+		{
+			name: 'Kelola Rubrik',
+			href: '/admin/rubrics',
+			iconActive: 'material-symbols:checklist'
+		},
+		{
 			name: 'Manajemen User',
 			href: '/admin/users',
 			iconActive: 'flowbite:users-group-outline'
@@ -54,7 +70,7 @@
 	<!-- Navigation Menu -->
 	<nav class="flex-1 space-y-1 overflow-y-auto p-4">
 		{#each menuItems as item (item.name)}
-			{@const isActive = $page.url.pathname.startsWith(item.href)}
+			{@const isActive = item.exact ? $page.url.pathname === item.href : $page.url.pathname.startsWith(item.href)}
 			<a
 				href={item.href}
                 data-sveltekit-preload-data="hover"

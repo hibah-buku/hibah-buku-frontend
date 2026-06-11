@@ -10,7 +10,6 @@ export async function GET({ url, cookies }) {
 
 	const token = cookies.get('auth_token');
 
-	// Tentukan URL backend (apakah file publik di /storage atau endpoint API terlindungi)
 	let fetchUrl;
 	if (targetPath.startsWith('/storage/')) {
 		const rootBase = API_BASE.replace('/api', '');
@@ -33,7 +32,6 @@ export async function GET({ url, cookies }) {
 			});
 		}
 
-		// Teruskan headers Content-Type dan pasang Content-Disposition untuk trigger download di browser
 		const responseHeaders = new Headers();
 		const contentType = response.headers.get('Content-Type');
 		if (contentType) {
@@ -41,7 +39,6 @@ export async function GET({ url, cookies }) {
 		}
 		responseHeaders.set('Content-Disposition', `attachment; filename="${fileName}"`);
 
-		// Stream content naskah/dokumen ke client
 		return new Response(response.body, {
 			status: response.status,
 			headers: responseHeaders
