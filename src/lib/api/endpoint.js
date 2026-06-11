@@ -52,7 +52,8 @@ export const ENDPOINTS = {
 		SHOW: (id) => `/manuscripts/${id}`, // GET: Detail lengkap naskah beserta riwayat file
 		UPLOAD_REVISION: (id) => `/manuscripts/${id}/upload-revision`, // POST: Unggah file revisi draft
 		STATUS: (id) => `/manuscripts/${id}/status`, // GET: Data stepper status naskah
-		DOWNLOAD: (id) => `/manuscripts/${id}/download` // GET: Unduh file naskah
+		DOWNLOAD: (id) => `/manuscripts/${id}/download`, // GET: Unduh file naskah
+		REVIEW_RESULTS: '/manuscripts/me/review-results' // GET: Review results for author
 	},
 	AUTHOR_DOCUMENTS: {
 		INDEX: '/manuscripts/me/documents', // GET: Daftar dokumen kelengkapan terunggah

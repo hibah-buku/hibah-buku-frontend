@@ -1,5 +1,10 @@
 <script>
 	let { data } = $props();
+
+	const reviews = $derived(data?.reviews ?? []);
+	const totalScore = $derived(reviews.reduce((acc, r) => acc + (r.score ?? 0), 0));
+	const averageScore = $derived(reviews.length > 0 ? (totalScore / reviews.length).toFixed(1) : '-');
+	const manuscriptStatus = $derived(data?.manuscriptStatus ?? '-');
 </script>
 
 <div class="space-y-6">
@@ -12,7 +17,7 @@
 			</p>
 
 			<p class="mt-2 text-3xl font-bold text-gray-800">
-				2
+				{reviews.length}
 			</p>
 		</div>
 
@@ -22,7 +27,7 @@
 			</p>
 
 			<p class="mt-2 text-3xl font-bold text-blue-700">
-				87.5
+				{averageScore}
 			</p>
 		</div>
 
@@ -32,35 +37,41 @@
 			</p>
 
 			<p class="mt-2 font-semibold text-amber-600">
-				Perlu Revisi
+				{manuscriptStatus}
 			</p>
 		</div>
 	</div>
 
 	<!-- Daftar Review -->
-	{#each data.reviews as review}
-		<div
-			class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-		>
-			<div class="flex items-center justify-between">
-				<h3 class="font-semibold text-gray-800">
-					{review.reviewer}
-				</h3>
-
-				<span
-					class="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700"
-				>
-					Skor: {review.score}
-				</span>
-			</div>
-
-			<div class="mt-4 rounded-xl bg-gray-50 p-4">
-				<p class="text-gray-700">
-					{review.comment}
-				</p>
-			</div>
+	{#if reviews.length === 0}
+		<div class="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+			Belum ada hasil review yang dikirimkan untuk naskah Anda.
 		</div>
-	{/each}
+	{:else}
+		{#each reviews as review}
+			<div
+				class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
+			>
+				<div class="flex items-center justify-between">
+					<h3 class="font-semibold text-gray-800">
+						{review.reviewer}
+					</h3>
+
+					<span
+						class="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700"
+					>
+						Skor: {review.score ?? '-'}
+					</span>
+				</div>
+
+				<div class="mt-4 rounded-xl bg-gray-50 p-4">
+					<p class="text-gray-700 whitespace-pre-line">
+						{review.comment || 'Tidak ada komentar umum.'}
+					</p>
+				</div>
+			</div>
+		{/each}
+	{/if}
 
 	<!-- Tombol Download -->
 	<div class="pt-2">
