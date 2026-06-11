@@ -19,9 +19,9 @@ export const load = async ({ cookies }) => {
     } else if (role === 'reviewer') {
       throw redirect(303, '/reviewer');
     } else if (role === 'author' || role === 'penulis') {
-      throw redirect(303, '/author');
+      throw redirect(303, '/author/dashboard');
     } else if (role === 'publisher' || role === 'penerbit') {
-      throw redirect(303, '/publisher');
+      throw redirect(303, '/publisher/dashboard');
     }
   } catch (error) {
     if (error?.status === 303) {

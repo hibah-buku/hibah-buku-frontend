@@ -42,6 +42,7 @@
 
             <!-- Form Login -->
             <form 
+            action="/login"
             method="POST" 
             use:enhance={() => {
                 loading = true;
