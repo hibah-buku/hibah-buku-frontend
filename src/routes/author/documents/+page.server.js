@@ -131,9 +131,9 @@ export const load = async (event) => {
 
 function getDocTypeLabel(type) {
     const labels = {
-        ktp: 'Kartu Tanda Penduduk (KTP)',
-        surat_pernyataan: 'Surat Pernyataan Keaslian',
-        rekening: 'Scan Buku Rekening'
+        surat_pernyataan: 'Surat Pernyataan Penulis',
+        scan_bermeterai: 'Scan Bermeterai',
+        dokumen_pendukung: 'Dokumen Pendukung Lain'
     };
     return labels[type] || type;
 }
