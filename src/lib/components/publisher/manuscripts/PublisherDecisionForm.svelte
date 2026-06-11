@@ -1,8 +1,7 @@
 <script>
   import { onMount, tick } from 'svelte';
-  import { applyAction, enhance } from '$app/forms';
+  import { applyAction, deserialize, enhance } from '$app/forms';
   import Icon from '@iconify/svelte';
-  import { ENDPOINTS } from '$lib/api/endpoint.js';
 
   let {
     manuscript,
@@ -19,8 +18,8 @@
   let pdfError = $state('');
   let zoom = $state(100);
   let totalPages = $state(0);
+  let isDownloading = $state(false);
 
-  // ✨ Identifikasi Status Naskah dari Database
   const isApproved = $derived(manuscript?.status === 'to_print');
   const isRevised = $derived(manuscript?.status === 'publisher_revised');
   const isDecisionMade = $derived(isApproved || isRevised);
@@ -39,6 +38,7 @@
     loadPdfPreview();
   }
 
+  // ✨ FIX: PDF preview lewat server action agar token ikut terkirim
   async function loadPdfPreview() {
     if (!manuscript?.id) return;
     isLoadingPdf = true;
@@ -57,26 +57,81 @@
         });
       }
 
-      const response = await fetch(ENDPOINTS.MANUSCRIPTS.DOWNLOAD(manuscript.id), {
-        method: 'GET',
-        headers: { Accept: 'application/pdf' }
+      // Kirim request ke server SvelteKit (bukan langsung ke BE)
+      // Server akan forward dengan token dari cookie
+      const formData = new FormData();
+      const response = await fetch(`?/downloadManuscript`, {
+        method: 'POST',
+        body: formData
       });
 
-      if (!response.ok) throw new Error('Gagal memuat file PDF naskah.');
+      const resultText = await response.text();
+      const actionResult = deserialize(resultText);
+      const downloadData = actionResult?.data?.downloadData ?? actionResult?.downloadData;
 
-      const blob = await response.blob();
+      if (!downloadData) {
+        const message = actionResult?.data?.message || actionResult?.message || 'Gagal memuat file PDF naskah.';
+        throw new Error(message);
+      }
+
+      const { base64, contentType } = downloadData;
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      const blob = new Blob([bytes], { type: contentType });
+
       if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl);
       pdfBlobUrl = URL.createObjectURL(blob);
-      
+
       pdfData = await window.pdfjsLib.getDocument(pdfBlobUrl).promise;
       totalPages = pdfData.numPages;
-      
+
       await tick();
       await renderAllPages(pdfData);
     } catch (error) {
       pdfError = error.message || 'Tidak dapat menampilkan PDF.';
     } finally {
       isLoadingPdf = false;
+    }
+  }
+
+  // ✨ FIX: Download naskah lewat server action agar token ikut terkirim
+  async function handleDownload() {
+    if (!manuscript?.id || isDownloading) return;
+    isDownloading = true;
+
+    try {
+      const formData = new FormData();
+      const response = await fetch(`?/downloadManuscript`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const resultText = await response.text();
+      const actionResult = deserialize(resultText);
+      const downloadData = actionResult?.data?.downloadData ?? actionResult?.downloadData;
+
+      if (!downloadData) {
+        const message = actionResult?.data?.message || actionResult?.message || 'Gagal mengunduh file.';
+        throw new Error(message);
+      }
+
+      const { base64, contentType, filename } = downloadData;
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      const blob = new Blob([bytes], { type: contentType });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(error.message || 'Gagal mengunduh file.');
+    } finally {
+      isDownloading = false;
     }
   }
 
@@ -100,20 +155,14 @@
   async function zoomIn() {
     if (zoom < 300) {
       zoom += 10;
-      if (pdfData) {
-        await tick();
-        await renderAllPages(pdfData);
-      }
+      if (pdfData) { await tick(); await renderAllPages(pdfData); }
     }
   }
 
   async function zoomOut() {
     if (zoom > 50) {
       zoom -= 10;
-      if (pdfData) {
-        await tick();
-        await renderAllPages(pdfData);
-      }
+      if (pdfData) { await tick(); await renderAllPages(pdfData); }
     }
   }
 
@@ -160,13 +209,21 @@
           <Icon icon="material-symbols:visibility" class="h-5 w-5 text-blue-600" />
         </button>
 
-        <a href={ENDPOINTS.MANUSCRIPTS.DOWNLOAD(manuscript?.id)} target="_blank" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition hover:border-gray-300 hover:bg-gray-100">
+        <!-- ✨ FIX: Ganti <a href> dengan button yang trigger handleDownload -->
+        <button
+          type="button"
+          onclick={handleDownload}
+          disabled={isDownloading}
+          class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition hover:border-gray-300 hover:bg-gray-100 disabled:opacity-50"
+        >
           <span>
-            <span class="block text-sm font-semibold text-gray-800">Unduh Naskah</span>
+            <span class="block text-sm font-semibold text-gray-800">
+              {isDownloading ? 'Mengunduh...' : 'Unduh Naskah'}
+            </span>
             <span class="text-xs text-gray-500">Unduh PDF</span>
           </span>
           <Icon icon="material-symbols:download-rounded" class="h-5 w-5 text-gray-600" />
-        </a>
+        </button>
 
         {#if manuscript?.links?.cover_url || manuscript?.download_links?.cover_url}
           <a href={manuscript?.links?.cover_url ?? manuscript?.download_links?.cover_url} target="_blank" class="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left transition hover:border-gray-300 hover:bg-gray-100">
@@ -360,8 +417,8 @@
           </div>
         {:else if pdfData}
           <div class="flex flex-col items-center gap-4 py-2">
-            {#each Array.from({ length: totalPages }) as _, index}
-              <canvas id={`publisher-pdf-${index + 1}`} class="rounded-xl bg-white shadow-xl"></canvas>
+            {#each Array.from({ length: totalPages }, (_, i) => i + 1) as pageNumber (pageNumber)}
+              <canvas id={`publisher-pdf-${pageNumber}`} class="rounded-xl bg-white shadow-xl"></canvas>
             {/each}
           </div>
         {/if}
