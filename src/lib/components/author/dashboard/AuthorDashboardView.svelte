@@ -129,7 +129,7 @@
 				</div>
 
 				<div class="relative pl-6 space-y-6 border-l-2 border-gray-100">
-					{#each dashboardData.timeline as step (step.order)}
+					{#each dashboardData.timeline as step, i (i)}
 						<div class="relative">
 							<!-- Circle Indicator -->
 							<span class={`
