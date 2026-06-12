@@ -4,6 +4,7 @@
 	import RejectModal from './RejectModal.svelte';
 
 	let { contracts = [], meta = {} } = $props();
+	console.log(contracts);
 
 	let activeContractId = $state(null);
 	let modalType = $state(null); // 'approve' | 'reject' | null
@@ -39,6 +40,52 @@
 	function formatStatus(status) {
 		return status?.replace('contract_', '').replace('_', ' ').toUpperCase();
 	}
+
+	const handleDownload = async (contractId, fileName) => {
+        try {
+            const getCookie = (name) => {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            };
+
+            const token = getCookie('auth_token');
+            
+            if (!token) {
+                alert('Sesi habis. Silakan login ulang.');
+                return;
+            }
+
+            const response = await fetch(`/api/contracts/${contractId}/download`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+					'Accept': 'application/pdf'
+                }
+            });
+
+            if (!response.ok) throw new Error('Gagal mengunduh file');
+
+            // Convert response jadi Blob
+            const blob = await response.blob();
+            
+            // link virtual 
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName || 'kontrak.pdf';
+            document.body.appendChild(link);
+            link.click();
+            
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            
+        } catch (error) {
+            console.error(error);
+            alert('Terjadi kesalahan saat mengunduh kontrak.');
+        }
+    };
 </script>
 
 <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
@@ -62,9 +109,6 @@
 						{@const fileSize = contract.file_info?.size
 							? (contract.file_info.size / 1024).toFixed(1) + ' KB'
 							: '-'}
-						{@const downloadUrl =
-							contract._links?.download ?? `/api/contracts/${contract.id}/download`}
-
 						<tr class="transition-colors hover:bg-gray-50">
 							<td class="px-6 py-4">
 								<div class="font-mono text-sm font-medium text-gray-900">#{contract.id}</div>
@@ -96,15 +140,13 @@
 									>
 										<Icon icon="boxicons:form" class="h-5 w-5" /> Detail
 									</a>
-									<a
-										href={downloadUrl}
-										target="_blank"
-										download={fileName}
+									<button
+										onclick={() => handleDownload(contract.id, contract.file_info?.original_name)}
 										class="inline-flex cursor-pointer items-center gap-1 rounded-sm bg-gray-600 px-3 py-2 text-xs font-medium text-gray-50 transition-colors hover:bg-gray-800"
 										title="Download Kontrak"
 									>
 										<Icon icon="heroicons:arrow-down-tray" class="h-5 w-5" /> Download
-									</a>
+									</button>
 
 									{#if contract.status === 'contract_uploaded'}
 										<button
