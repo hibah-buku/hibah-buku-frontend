@@ -59,7 +59,7 @@
     function getDownloadUrl(doc) {
         if (!doc) return '#';
         const fileExt = doc.file_path.split('.').pop();
-        return `/author/documents/download?path=${encodeURIComponent('/storage/' + doc.file_path)}&name=${encodeURIComponent(doc.document_type.toUpperCase() + '.' + fileExt)}`;
+        return `/author/documents/download?path=${encodeURIComponent('/manuscripts/me/documents/' + doc.document_type + '/download')}&name=${encodeURIComponent(doc.document_type.toUpperCase() + '.' + fileExt)}`;
     }
 </script>
 

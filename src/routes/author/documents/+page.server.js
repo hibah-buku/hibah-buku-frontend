@@ -76,7 +76,7 @@ export const load = async (event) => {
             size_kb: doc.file_size_kb,
             status: doc.is_verified ? 'Terverifikasi' : 'Menunggu Verifikasi',
             statusColor: doc.is_verified ? 'green' : 'yellow',
-            download_url: `/author/documents/download?path=${encodeURIComponent('/storage/' + doc.file_path)}&name=${encodeURIComponent(doc.document_type.toUpperCase() + '_TERUNGGAH.' + fileExt)}`
+            download_url: `/author/documents/download?path=${encodeURIComponent('/manuscripts/me/documents/' + doc.document_type + '/download')}&name=${encodeURIComponent(doc.document_type.toUpperCase() + '_TERUNGGAH.' + fileExt)}`
         });
     });
 
